@@ -6,6 +6,24 @@ IMPLEMENT_DYNAMIC(CTrDialog, CDialog)
 IMPLEMENT_DYNAMIC(CTrPropertyPage, CPropertyPage)
 IMPLEMENT_DYNAMIC(CTrDialogBar, CDialogBar)
 
+BEGIN_MESSAGE_MAP(CTrDialog, DpiAware::CDpiAwareDialog<CDialog>)
+	ON_MESSAGE(WM_DPICHANGED, OnDpiChanged)
+END_MESSAGE_MAP()
+
+BEGIN_MESSAGE_MAP(CTrPropertyPage, DpiAware::CDpiAwareDialog<CPropertyPage>)
+	ON_MESSAGE(WM_DPICHANGED_BEFOREPARENT, OnDpiChangedBeforeParent)
+END_MESSAGE_MAP()
+
+BEGIN_MESSAGE_MAP(CTrDialogBar, DpiAware::CDpiAwareDialog<CDialogBar>)
+	ON_MESSAGE(WM_DPICHANGED_BEFOREPARENT, OnDpiChangedBeforeParent)
+END_MESSAGE_MAP()
+
+void DpiChangedImplHelper(HWND hwnd, int olddpi, int newdpi)
+{
+	theApp.ChangeDialogFont(hwnd, newdpi);
+	DpiAware::Dialog_UpdateControlInnerWidths(hwnd, olddpi, newdpi);
+}
+
 void StaticDlgUtils::WildcardRemoveDuplicatePatterns(String& patterns)
 {
 	size_t i = 0, j = 0, k = 0;
@@ -29,21 +47,21 @@ void StaticDlgUtils::WildcardRemoveDuplicatePatterns(String& patterns)
 BOOL CTrDialog::OnInitDialog()
 {
 	theApp.TranslateDialog(m_hWnd);
-	CDialog::OnInitDialog();
+	__super::OnInitDialog();
 	return TRUE;
 }
 
 BOOL CTrPropertyPage::OnInitDialog()
 {
 	theApp.TranslateDialog(m_hWnd);
-	CPropertyPage::OnInitDialog();
+	__super::OnInitDialog();
 	return TRUE;
 }
 
 BOOL CTrDialogBar::Create(CWnd* pParentWnd, LPCTSTR lpszTemplateName,
 	UINT nStyle, UINT nID)
 {
-	BOOL bSucceeded = CDialogBar::Create(pParentWnd, lpszTemplateName, nStyle, nID);
+	BOOL bSucceeded = __super::Create(pParentWnd, lpszTemplateName, nStyle, nID);
 	if (bSucceeded)
 		theApp.TranslateDialog(m_hWnd);
 	return bSucceeded;
@@ -52,7 +70,7 @@ BOOL CTrDialogBar::Create(CWnd* pParentWnd, LPCTSTR lpszTemplateName,
 BOOL CTrDialogBar::Create(CWnd* pParentWnd, UINT nIDTemplate,
 	UINT nStyle, UINT nID)
 {
-	BOOL bSucceeded = CDialogBar::Create(pParentWnd, nIDTemplate, nStyle, nID);
+	BOOL bSucceeded = __super::Create(pParentWnd, nIDTemplate, nStyle, nID);
 	if (bSucceeded)
 		theApp.TranslateDialog(m_hWnd);
 	return bSucceeded;

@@ -738,7 +738,12 @@ void CLanguageSelect::SetIndicators(CStatusBar &sb, const UINT *rgid, int n) con
 		sb.SetIndicators(0, n);
 	else
 		n = sb.m_nCount;
-	int cx = ::GetSystemMetrics(SM_CXSCREEN) / 4;	// default to 1/4 the screen width
+
+	HMONITOR monitor = MonitorFromWindow(sb.m_hWnd, MONITOR_DEFAULTTONEAREST);
+	MONITORINFO info{ sizeof MONITORINFO };
+	GetMonitorInfo(monitor, &info);
+
+	int cx = (info.rcMonitor.right - info.rcMonitor.left) / 4;	// default to 1/4 the screen width
 	UINT style = SBPS_STRETCH | SBPS_NOBORDERS;		// first pane is stretchy
 	for (int i = 0 ; i < n ; ++i)
 	{

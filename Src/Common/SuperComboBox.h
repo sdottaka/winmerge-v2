@@ -5,13 +5,14 @@
 
 #include <vector>
 #include "UnicodeString.h"
+#include "utils/DpiAware.h"
 
 class DropHandler;
 
 /////////////////////////////////////////////////////////////////////////////
 // CSuperComboBox window
 
-class CSuperComboBox : public CComboBoxEx
+class CSuperComboBox : public DpiAware::CDpiAwareWnd<CComboBoxEx>
 {
 // Construction
 public:
@@ -31,7 +32,7 @@ protected:
 	bool m_bCanBeEmpty;
 
 	bool m_bMustUninitOLE;
-	static HIMAGELIST m_himlSystem;
+	static std::map<int, HIMAGELIST> m_himlSystemMap;
 
 	DropHandler *m_pDropHandler;
 
@@ -85,6 +86,7 @@ protected:
 	afx_msg void OnGetDispInfo(NMHDR *pNotifyStruct, LRESULT *pResult);
 	afx_msg void OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruct);
 	afx_msg void OnDestroy();
+	afx_msg LRESULT OnDpiChangedBeforeParent(WPARAM wParam, LPARAM lParam);
 	//}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()

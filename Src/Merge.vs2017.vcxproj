@@ -174,7 +174,13 @@
       <GenerateMapFile>true</GenerateMapFile>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <MinimumRequiredVersion>5.01</MinimumRequiredVersion>
     </Link>
+    <Manifest>
+      <EnableDpiAwareness>
+      </EnableDpiAwareness>
+      <AdditionalManifestFiles>$(TargetName).manifest</AdditionalManifestFiles>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Midl>
@@ -226,6 +232,11 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
     </Link>
+    <Manifest>
+      <EnableDpiAwareness>
+      </EnableDpiAwareness>
+      <AdditionalManifestFiles>$(TargetName).manifest</AdditionalManifestFiles>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Midl>
@@ -274,7 +285,13 @@
       <TargetMachine>MachineX86</TargetMachine>
       <GenerateMapFile>true</GenerateMapFile>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <MinimumRequiredVersion>5.01</MinimumRequiredVersion>
     </Link>
+    <Manifest>
+      <EnableDpiAwareness>
+      </EnableDpiAwareness>
+      <AdditionalManifestFiles>$(TargetName).manifest</AdditionalManifestFiles>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Test|Win32'">
     <Midl>
@@ -322,7 +339,13 @@
       <TargetMachine>MachineX86</TargetMachine>
       <GenerateMapFile>true</GenerateMapFile>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <MinimumRequiredVersion>5.01</MinimumRequiredVersion>
     </Link>
+    <Manifest>
+      <EnableDpiAwareness>
+      </EnableDpiAwareness>
+      <AdditionalManifestFiles>$(TargetName).manifest</AdditionalManifestFiles>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Midl>
@@ -370,6 +393,11 @@
       <Profile>false</Profile>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
+    <Manifest>
+      <EnableDpiAwareness>
+      </EnableDpiAwareness>
+      <AdditionalManifestFiles>$(TargetName).manifest</AdditionalManifestFiles>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Test|x64'">
     <Midl>
@@ -416,6 +444,11 @@
       <Profile>false</Profile>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
+    <Manifest>
+      <EnableDpiAwareness>
+      </EnableDpiAwareness>
+      <AdditionalManifestFiles>$(TargetName).manifest</AdditionalManifestFiles>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\Externals\crystaledit\editlib\parsers\asp.cpp" />
@@ -445,6 +478,7 @@
     <ClCompile Include="..\Externals\crystaledit\editlib\parsers\css.cpp" />
     <ClCompile Include="..\Externals\crystaledit\editlib\dialogs\ctextmarkerdlg.cpp" />
     <ClCompile Include="..\Externals\crystaledit\editlib\parsers\dcl.cpp" />
+    <ClCompile Include="..\Externals\crystaledit\editlib\utils\DpiAware.cpp" />
     <ClCompile Include="..\Externals\crystaledit\editlib\utils\filesup.cpp" />
     <ClCompile Include="..\Externals\crystaledit\editlib\parsers\fortran.cpp" />
     <ClCompile Include="..\Externals\crystaledit\editlib\utils\fpattern.cpp" />
@@ -469,6 +503,7 @@
     <ClCompile Include="..\Externals\crystaledit\editlib\parsers\po.cpp" />
     <ClCompile Include="..\Externals\crystaledit\editlib\parsers\powershell.cpp" />
     <ClCompile Include="..\Externals\crystaledit\editlib\parsers\python.cpp" />
+    <ClCompile Include="..\Externals\crystaledit\editlib\utils\MDITileLayout.cpp" />
     <ClCompile Include="..\Externals\crystaledit\editlib\utils\registry.cpp" />
     <ClCompile Include="..\Externals\crystaledit\editlib\parsers\rexx.cpp" />
     <ClCompile Include="..\Externals\crystaledit\editlib\parsers\rsrc.cpp" />
@@ -1077,6 +1112,7 @@
     <ClInclude Include="..\Externals\crystaledit\editlib\editcmd.h" />
     <ClInclude Include="..\Externals\crystaledit\editlib\editreg.h" />
     <ClInclude Include="..\Externals\crystaledit\editlib\edtlib.h" />
+    <ClInclude Include="..\Externals\crystaledit\editlib\utils\DpiAware.h" />
     <ClInclude Include="..\Externals\crystaledit\editlib\utils\filesup.h" />
     <ClInclude Include="..\Externals\crystaledit\editlib\utils\fpattern.h" />
     <ClInclude Include="..\Externals\crystaledit\editlib\dialogs\gotodlg.h" />
@@ -1084,6 +1120,8 @@
     <ClInclude Include="..\Externals\crystaledit\editlib\LineInfo.h" />
     <ClInclude Include="..\Externals\crystaledit\editlib\crystallineparser.h" />
     <ClInclude Include="..\Externals\crystaledit\editlib\dialogs\memcombo.h" />
+    <ClInclude Include="..\Externals\crystaledit\editlib\utils\MDITileLayout.h" />
+    <ClInclude Include="..\Externals\crystaledit\editlib\utils\mfc_templ_defines.h" />
     <ClInclude Include="..\Externals\crystaledit\editlib\utils\registry.h" />
     <ClInclude Include="..\Externals\crystaledit\editlib\utils\string_util.h" />
     <ClInclude Include="..\Externals\crystaledit\editlib\SyntaxColors.h" />
@@ -1345,6 +1383,9 @@
     <ResourceCompile Include="Merge2.rc">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="WinMergeU.manifest" />
   </ItemGroup>
   <Target Name="CopyVisualElements" AfterTargets="Build">
     <ItemGroup>

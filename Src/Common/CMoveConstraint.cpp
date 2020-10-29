@@ -17,6 +17,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 #include "StdAfx.h"
 #include "CMoveConstraint.h"
+#include "utils/DpiAware.h"
 #include <afxtempl.h>       // MFC template collection classes
 #include <afxext.h> // needed for CFormView
 
@@ -39,8 +40,9 @@ static RECT getGripRect(HWND hwnd)
 {
 	RECT rc;
 	GetClientRect(hwnd, &rc);
-	rc.left = rc.right - GetSystemMetrics(SM_CXVSCROLL);
-	rc.top = rc.bottom - GetSystemMetrics(SM_CYHSCROLL);
+	const int dpi = DpiAware::GetDpiForWindow(hwnd);
+	rc.left = rc.right - DpiAware::GetSystemMetricsForDpi(SM_CXVSCROLL, dpi);
+	rc.top = rc.bottom - DpiAware::GetSystemMetricsForDpi(SM_CYHSCROLL, dpi);
 	return rc;
 }
 
@@ -89,6 +91,7 @@ CMoveConstraint::InitializeCurrentSize(HWND hwndDlg)
 	if (!IsWindow(hwndDlg))
 		return false;
 	m_hwndDlg = hwndDlg;
+	m_dpi = DpiAware::GetDpiForWindow(hwndDlg);
 
 	GrabCurrentDimensionsAsOriginal(hwndDlg);
 	return true;
@@ -101,6 +104,11 @@ CMoveConstraint::GrabCurrentDimensionsAsOriginal(HWND hwndDlg)
 	GetClientRect(hwndDlg, m_rectDlgOriginal);
 	CRect rect;
 	GetWindowRect(hwndDlg, &rect);
+	LOGFONT lf;
+	CFont* pFont = CWnd::FromHandle(hwndDlg)->GetFont();
+	pFont->GetLogFont(&lf);
+	m_fontFace = lf.lfFaceName;
+	m_fontSize = MulDiv(abs(lf.lfHeight), 72, m_dpi);
 
 	// (min/max code)
 	// remember original width & heighth in case a disallow function called
@@ -132,6 +140,7 @@ CMoveConstraint::InitializeOriginalSize(HWND hwndDlg)
 {
 	ASSERT(hwndDlg != nullptr && m_hwndDlg == nullptr);
 	m_hwndDlg = hwndDlg;
+	m_dpi = DpiAware::GetDpiForWindow(hwndDlg);
 
 	return m_nOrigX != 0; // if 0, we didn't get WM_SIZE so we don't know the original size
 }
@@ -246,6 +255,7 @@ CMoveConstraint::ClearMostData()
 	m_nMaxX=0;
 	m_nMaxY=0;
 	m_nDelayed=0;
+	m_dpi=0;
 	// this specifically does NOT touch m_bSubclassed, as a subclass may still be in use
 	m_pFormView=nullptr;
 	m_nOrigScrollX=0;
@@ -651,6 +661,42 @@ CMoveConstraint::WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam, L
 	} else if (msg==WM_NOTIFY && TTN_NEEDTEXT==((NMHDR*)lParam)->code) {
 		if (OnTtnNeedText((TOOLTIPTEXT*)lParam, plresult))
 			return true;
+	} else if (WM_DPICHANGED == msg) {
+		const int olddpi = m_dpi;
+		m_dpi = HIWORD(wParam);
+		const int oldnonclientsx = m_nOrigX - m_rectDlgOriginal.Width();
+		const int oldnonclientsy = m_nOrigY - m_rectDlgOriginal.Height();
+		CRect rc, rcClient;
+		GetWindowRect(m_hwndDlg, &rc);
+		GetClientRect(m_hwndDlg, &rcClient);
+		const int newnonclientsx = rc.Width() - rcClient.Width();
+		const int newnonclientsy = rc.Height() - rcClient.Height();
+		const RECT* pRect = reinterpret_cast<RECT*>(lParam);
+		CSize sizeOld = { m_rectDlgOriginal.right, m_rectDlgOriginal.bottom };
+		CSize sizeNew = DpiAware::Dialog_CalcUpdatedSize(m_fontFace.c_str(), m_fontSize, sizeOld, olddpi, m_dpi);
+		m_rectDlgOriginal.right = sizeNew.cx;
+		m_rectDlgOriginal.bottom = sizeNew.cx;
+		for (auto& pval : { &m_nMaxX, &m_nMinX, &m_nOrigX })
+		{
+			if (*pval)
+				*pval = MulDiv(*pval - oldnonclientsx, sizeNew.cx, sizeOld.cx) + newnonclientsx;
+		}
+		for (auto& pval : { &m_nMaxY, &m_nMinY, &m_nOrigY })
+		{
+			if (*pval)
+				*pval = MulDiv(*pval - oldnonclientsy, sizeNew.cy, sizeOld.cy) + newnonclientsy;
+		}
+		ConstraintList & constraintList = m_ConstraintList;
+		for (POSITION pos=constraintList.GetHeadPosition(); pos != nullptr; constraintList.GetNext(pos))
+		{
+			Constraint & constraint = constraintList.GetAt(pos);
+			for (auto& pval :
+				{ &constraint.m_rectChildOriginal.left, &constraint.m_rectChildOriginal.right })
+				*pval = MulDiv(*pval, sizeNew.cx, sizeOld.cx);
+			for (auto& pval :
+				{ &constraint.m_rectChildOriginal.top, &constraint.m_rectChildOriginal.bottom })
+				*pval = MulDiv(*pval, sizeNew.cy, sizeOld.cy);
+		}
 	}
 
 	return false;

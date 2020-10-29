@@ -252,6 +252,15 @@
     <ClCompile Include="..\editlib\dialogs\ceditreplacedlg.cpp">
       <Filter>editlib\dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="..\editlib\utils\DpiAware.cpp">
+      <Filter>editlib\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\editlib\utils\MDITileLayout.cpp">
+      <Filter>editlib\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\editlib\utils\hqbitmap.cpp">
+      <Filter>editlib\utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Sample.rc">
@@ -378,6 +387,15 @@
     </ClInclude>
     <ClInclude Include="..\editlib\dialogs\memcombo.h">
       <Filter>editlib\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\editlib\utils\DpiAware.h">
+      <Filter>editlib\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\editlib\utils\MDITileLayout.h">
+      <Filter>editlib\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\editlib\utils\hqbitmap.h">
+      <Filter>editlib\utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

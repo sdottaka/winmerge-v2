@@ -112,15 +112,12 @@ void FileFiltersDlg::InitList()
 	// Also enable infotips.
 	m_listFilters.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP);
 
-	const int lpx = CClientDC(this).GetDeviceCaps(LOGPIXELSX);
-	auto pointToPixel = [lpx](int point) { return MulDiv(point, lpx, 72); };
-
 	String title = _("Name");
-	m_listFilters.InsertColumn(0, title.c_str(), LVCFMT_LEFT, pointToPixel(112));
+	m_listFilters.InsertColumn(0, title.c_str(), LVCFMT_LEFT, PointToPixel(112));
 	title = _("Description");
-	m_listFilters.InsertColumn(1, title.c_str(), LVCFMT_LEFT, pointToPixel(262));
+	m_listFilters.InsertColumn(1, title.c_str(), LVCFMT_LEFT, PointToPixel(262));
 	title = _("Location");
-	m_listFilters.InsertColumn(2, title.c_str(), LVCFMT_LEFT, pointToPixel(262));
+	m_listFilters.InsertColumn(2, title.c_str(), LVCFMT_LEFT, PointToPixel(262));
 
 	title = _("<None>");
 	m_listFilters.InsertItem(1, title.c_str());

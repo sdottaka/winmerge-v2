@@ -72,6 +72,7 @@ public:
 	void SetIndicators(CStatusBar &, const UINT *, int) const;
 	void TranslateMenu(HMENU) const;
 	void TranslateDialog(HWND) const;
+	void ChangeDialogFont(HWND hwnd, int dpi) const;
 	String LoadString(UINT) const;
 	bool TranslateString(const std::string&, String&) const; 
 	std::wstring LoadDialogCaption(LPCTSTR) const;
@@ -152,6 +153,8 @@ protected:
 	LONG GetActiveOperations() const { return m_nActiveOperations; }
 	//@}
 
+	CFont *GetGUIFont(int dpi) const;
+
 	//{{AFX_MSG(CMergeApp)
 	afx_msg BOOL OnOpenRecentFile(UINT nID);
 	afx_msg void OnAppAbout();
@@ -168,7 +171,7 @@ private:
 	bool m_bNonInteractive;
 	LONG m_nActiveOperations; /**< Active operations count. */
 	bool m_bMergingMode; /**< Merging or Edit mode */
-	CFont m_fontGUI;
+	mutable std::map<int, CFont> m_mapFontGUI;
 	ATL::CImage m_imageForInitializingGdiplus;
 };
 

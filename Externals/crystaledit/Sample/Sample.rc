@@ -197,8 +197,12 @@ BEGIN
     BEGIN
         MENUITEM "&New Window",                 ID_WINDOW_NEW
         MENUITEM "&Cascade",                    ID_WINDOW_CASCADE
-        MENUITEM "&Tile",                       ID_WINDOW_TILE_HORZ
+        MENUITEM "Tile &Vertically",            ID_WINDOW_TILE_VERT
+        MENUITEM "Tile &Horizontally",          ID_WINDOW_TILE_HORZ
         MENUITEM "&Arrange Icons",              ID_WINDOW_ARRANGE
+        MENUITEM "Split V&ertically",           ID_WINDOW_SPLIT_VERTICALLY
+        MENUITEM "Split H&orizontally",         ID_WINDOW_SPLIT_HORIZONTALLY
+        MENUITEM "Com&bine",                    ID_WINDOW_COMBINE
     END
     POPUP "&Help"
     BEGIN

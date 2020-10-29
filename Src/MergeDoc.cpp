@@ -3391,10 +3391,8 @@ bool CMergeDoc::GenerateReport(const String& sFileName) const
 {
 	// calculate HTML font size
 	LOGFONT lf;
-	CDC dc;
-	dc.CreateDC(_T("DISPLAY"), nullptr, nullptr, nullptr);
 	m_pView[0][0]->GetFont(lf);
-	int nFontSize = -MulDiv (lf.lfHeight, 72, dc.GetDeviceCaps (LOGPIXELSY));
+	int nFontSize = -MulDiv (lf.lfHeight, 72, m_pView[0][0]->m_dpi);
 
 	// create HTML report
 	UniStdioFile file;

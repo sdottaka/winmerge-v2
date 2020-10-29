@@ -4,7 +4,9 @@
 
 #pragma once
 
-class CChildFrame : public CMDIChildWnd
+#include "utils/DpiAware.h"
+
+class CChildFrame : public DpiAware::CDpiAwareWnd<CMDIChildWnd>
 {
 	DECLARE_DYNCREATE(CChildFrame)
 public:
@@ -24,6 +26,7 @@ public:
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 	protected:
 	virtual BOOL OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext);
+    virtual BOOL DestroyWindow();
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -40,6 +43,7 @@ protected:
 		// NOTE - the ClassWizard will add and remove member functions here.
 		//    DO NOT EDIT what you see in these blocks of generated code!
 	//}}AFX_MSG
+    afx_msg void OnSize(UINT nType, int cx, int cy);
 	DECLARE_MESSAGE_MAP()
 };
 

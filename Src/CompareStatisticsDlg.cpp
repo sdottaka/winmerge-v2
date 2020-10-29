@@ -43,7 +43,7 @@ BOOL CompareStatisticsDlg::OnInitDialog()
 	CTrDialog::OnInitDialog();
 	int totalFiles = 0;
 	int totalFolders = 0;
-	const int iconCX = []() {
+	const int iconCX = [this]() {
 		const int cx = GetSystemMetrics(SM_CXSMICON);
 		if (cx < 24)
 			return 16;

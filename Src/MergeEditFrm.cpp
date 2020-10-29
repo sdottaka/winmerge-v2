@@ -158,7 +158,7 @@ BOOL CMergeEditFrame::OnCreateClient( LPCREATESTRUCT /*lpcs*/,
 */
 int CMergeEditFrame::OnCreate(LPCREATESTRUCT lpCreateStruct) 
 {
-	if (CMDIChildWnd::OnCreate(lpCreateStruct) == -1)
+	if (__super::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
 	EnableDocking(CBRS_ALIGN_TOP|CBRS_ALIGN_BOTTOM|CBRS_ALIGN_LEFT|CBRS_ALIGN_RIGHT);
@@ -442,7 +442,7 @@ LRESULT CMergeEditFrame::OnStorePaneSizes(WPARAM wParam, LPARAM lParam)
 
 void CMergeEditFrame::OnSize(UINT nType, int cx, int cy) 
 {
-	CMDIChildWnd::OnSize(nType, cx, cy);
+	__super::OnSize(nType, cx, cy);
 	
 	UpdateHeaderSizes();
 }

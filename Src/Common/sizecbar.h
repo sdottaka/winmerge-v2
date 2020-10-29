@@ -29,6 +29,7 @@
 
 #include <afxpriv.h>    // for CDockContext
 #include <afxtempl.h>   // for CTypedPtrArray
+#include "utils/DpiAware.h"
 
 // MFC 8/VS.NET 2005 has breaking change in OnNcHitTest return value
 #ifndef NCHITTEST_RESULT
@@ -72,7 +73,7 @@ class CSCBDockBar : public CDockBar
 class CSizingControlBar;
 typedef CTypedPtrArray <CPtrArray, CSizingControlBar*> CSCBArray;
 
-class CSizingControlBar : public baseCSizingControlBar
+class CSizingControlBar : public DpiAware::CDpiAwareWnd<baseCSizingControlBar>
 {
     DECLARE_DYNAMIC(CSizingControlBar);
 
@@ -178,6 +179,7 @@ protected:
     afx_msg void OnSize(UINT nType, int cx, int cy);
     //}}AFX_MSG
     afx_msg LRESULT OnSetText(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnDpiChangedBeforeParent(WPARAM wParam, LPARAM lParam);
 
     DECLARE_MESSAGE_MAP()
 

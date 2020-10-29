@@ -90,7 +90,7 @@ END_MESSAGE_MAP()
  */
 int CDirFrame::OnCreate(LPCREATESTRUCT lpCreateStruct) 
 {
-	if (CMDIChildWnd::OnCreate(lpCreateStruct) == -1)
+	if (__super::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
 	EnableDocking(CBRS_ALIGN_TOP);
@@ -112,14 +112,12 @@ int CDirFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	}	
 	
 	String sText = _("RO");
-	const int lpx = CClientDC(this).GetDeviceCaps(LOGPIXELSX);
-	auto pointToPixel = [lpx](int point) { return MulDiv(point, lpx, 72); };
 	m_wndStatusBar.SetPaneInfo(0, 0, SBPS_STRETCH | SBPS_NOBORDERS, 0);
-	m_wndStatusBar.SetPaneInfo(PANE_COMPMETHOD, ID_STATUS_FILTER, 0, pointToPixel(COMPMETHOD_PANEL_WIDTH));
-	m_wndStatusBar.SetPaneInfo(PANE_FILTER, ID_STATUS_FILTER, 0, pointToPixel(FILTER_PANEL_WIDTH));
-	m_wndStatusBar.SetPaneInfo(PANE_LEFT_RO, ID_STATUS_LEFTDIR_RO, 0, pointToPixel(RO_PANEL_WIDTH));
-	m_wndStatusBar.SetPaneInfo(PANE_MIDDLE_RO, ID_STATUS_MIDDLEDIR_RO, 0, pointToPixel(RO_PANEL_WIDTH));
-	m_wndStatusBar.SetPaneInfo(PANE_RIGHT_RO, ID_STATUS_RIGHTDIR_RO, 0, pointToPixel(RO_PANEL_WIDTH));
+	m_wndStatusBar.SetPaneInfo(PANE_COMPMETHOD, ID_STATUS_FILTER, 0, PointToPixel(COMPMETHOD_PANEL_WIDTH));
+	m_wndStatusBar.SetPaneInfo(PANE_FILTER, ID_STATUS_FILTER, 0, PointToPixel(FILTER_PANEL_WIDTH));
+	m_wndStatusBar.SetPaneInfo(PANE_LEFT_RO, ID_STATUS_LEFTDIR_RO, 0, PointToPixel(RO_PANEL_WIDTH));
+	m_wndStatusBar.SetPaneInfo(PANE_MIDDLE_RO, ID_STATUS_MIDDLEDIR_RO, 0, PointToPixel(RO_PANEL_WIDTH));
+	m_wndStatusBar.SetPaneInfo(PANE_RIGHT_RO, ID_STATUS_RIGHTDIR_RO, 0, PointToPixel(RO_PANEL_WIDTH));
 	m_wndStatusBar.SetPaneText(PANE_LEFT_RO, sText.c_str(), TRUE); 
 	m_wndStatusBar.SetPaneText(PANE_MIDDLE_RO, sText.c_str(), TRUE); 
 	m_wndStatusBar.SetPaneText(PANE_RIGHT_RO, sText.c_str(), TRUE);
@@ -163,7 +161,7 @@ void CDirFrame::SetFilterStatusDisplay(LPCTSTR szFilter)
  */
 void CDirFrame::ActivateFrame(int nCmdShow) 
 {
-	CMergeFrameCommon::ActivateFrame(nCmdShow);
+	__super::ActivateFrame(nCmdShow);
 }
 
 /**
@@ -175,7 +173,7 @@ void CDirFrame::UpdateResources()
 
 void CDirFrame::OnClose() 
 {	
-	CMDIChildWnd::OnClose();
+	__super::OnClose();
 }
 
 /**
@@ -188,12 +186,12 @@ BOOL CDirFrame::DestroyWindow()
 	GetDockState(dockState);
 	dockState.SaveState(_T("Settings-DirFrame"));
 	SaveWindowState();
-	return CMDIChildWnd::DestroyWindow();
+	return __super::DestroyWindow();
 }
 
 void CDirFrame::OnSize(UINT nType, int cx, int cy) 
 {
-	CMDIChildWnd::OnSize(nType, cx, cy);
+	__super::OnSize(nType, cx, cy);
 	
 	m_wndFilePathBar.Resize();
 }

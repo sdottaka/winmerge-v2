@@ -20,6 +20,7 @@
 #include "UnicodeString.h"
 #include "DirItemIterator.h"
 #include "DirActions.h"
+#include "utils/DpiAware.h"
 
 class FileActionScript;
 
@@ -59,7 +60,7 @@ const UINT DefColumnWidth = 111;
  * CDiffContext items are linked by storing POSITION of CDiffContext item
  * as CDirView listitem key.
  */
-class CDirView : public CListView
+class CDirView : public DpiAware::CDpiAwareWnd<CListView>
 {
 	friend struct FileCmpReport;
 	friend DirItemEnumerator;
@@ -380,6 +381,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 	bool OnHeaderBeginDrag(LPNMHEADER hdr, LRESULT* pResult);
 	bool OnHeaderEndDrag(LPNMHEADER hdr, LRESULT* pResult);
+	LRESULT OnDpiChangedBeforeParent(WPARAM wParam, LPARAM lParam);
 
 private:
 	void Open(const PathContext& paths, DWORD dwFlags[3], PackingInfo * infoUnpacker = nullptr);
@@ -405,7 +407,7 @@ private:
 	void CollapseSubdir(int sel);
 	void ExpandSubdir(int sel, bool bRecursive = false);
 	void GetColors(int nRow, int nCol, COLORREF& clrBk, COLORREF& clrText) const;
-	int GetDefColumnWidth() const { return MulDiv(DefColumnWidth, CClientDC(const_cast<CDirView *>(this)).GetDeviceCaps(LOGPIXELSX), 72); };
+	int GetDefColumnWidth() const { return PointToPixel(DefColumnWidth); };
 
 public:
 	DirItemIterator Begin() const { return DirItemIterator(m_pIList.get()); }

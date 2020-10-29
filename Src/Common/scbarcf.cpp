@@ -67,7 +67,7 @@ END_MESSAGE_MAP()
 
 void CSizingControlBarCF::OnUpdateCmdUI(CFrameWnd* pTarget, BOOL bDisableIfNoHndler)
 {
-    baseCSizingControlBarCF::OnUpdateCmdUI(pTarget, bDisableIfNoHndler);
+    __super::OnUpdateCmdUI(pTarget, bDisableIfNoHndler);
 
     if (!HasGripper())
         return;
@@ -94,22 +94,20 @@ void CSizingControlBarCF::NcPaintGripper(CDC* pDC, CRect rcClient)
     // compute the caption rectangle
     bool bHorz = IsHorzDocked();
     CRect rcGrip = rcClient;
-    const int lpx = pDC->GetDeviceCaps(LOGPIXELSX);
-    auto pointToPixel = [lpx](double point) { return static_cast<int>(point * lpx / 72); };
-    CRect rcBtn(m_biHide.ptOrg, CSize(pointToPixel(m_biHide.dblBoxSize), pointToPixel(m_biHide.dblBoxSize)));
+    CRect rcBtn(m_biHide.ptOrg, CSize(PointToPixel(m_biHide.dblBoxSize), PointToPixel(m_biHide.dblBoxSize)));
     if (bHorz)
     {   // right side gripper
-        rcGrip.left -= pointToPixel(m_dblGripper + 0.75);
-        rcGrip.right = rcGrip.left + pointToPixel(8.25);
-		rcGrip.top = rcBtn.bottom + pointToPixel(2.25);
+        rcGrip.left -= PointToPixel(m_dblGripper + 0.75);
+        rcGrip.right = rcGrip.left + PointToPixel(8.25);
+		rcGrip.top = rcBtn.bottom + PointToPixel(2.25);
     }
     else
     {   // gripper at top
-        rcGrip.top -= pointToPixel(m_dblGripper + 0.75);
-        rcGrip.bottom = rcGrip.top + pointToPixel(8.25);
-        rcGrip.right = rcBtn.left - pointToPixel(2.25);
+        rcGrip.top -= PointToPixel(m_dblGripper + 0.75);
+        rcGrip.bottom = rcGrip.top + PointToPixel(8.25);
+        rcGrip.right = rcBtn.left - PointToPixel(2.25);
     }
-    rcGrip.InflateRect(bHorz ? pointToPixel(0.75) : 0, bHorz ? 0 : pointToPixel(0.75));
+    rcGrip.InflateRect(bHorz ? PointToPixel(0.75) : 0, bHorz ? 0 : PointToPixel(0.75));
 
     // draw the caption background
     //CBrush br;
@@ -173,7 +171,8 @@ void CSizingControlBarCF::NcPaintGripper(CDC* pDC, CRect rcClient)
     // draw the caption text - first select a font
     CFont font;
     LOGFONT lf;
-    bool bFont = !!font.CreatePointFont(85/*8.5 points*/, m_sFontFace);
+    DpiAware::GetPointLogFont(lf, 8.5, m_sFontFace, GetDpi());
+    bool bFont = !!font.CreateFontIndirect(&lf);
     if (bFont)
     {
         // get the text color
@@ -198,8 +197,8 @@ void CSizingControlBarCF::NcPaintGripper(CDC* pDC, CRect rcClient)
         GetWindowText(sTitle);
 
         CPoint ptOrg = bHorz ?
-            CPoint(rcGrip.left - pointToPixel(0.75), rcGrip.bottom - pointToPixel(2.25)) :
-            CPoint(rcGrip.left + pointToPixel(2.25), rcGrip.top - pointToPixel(0.75));
+            CPoint(rcGrip.left - PointToPixel(0.75), rcGrip.bottom - PointToPixel(2.25)) :
+            CPoint(rcGrip.left + PointToPixel(2.25), rcGrip.top - PointToPixel(0.75));
 
         pDC->ExtTextOut(ptOrg.x, ptOrg.y,
             ETO_CLIPPED, rcGrip, sTitle, nullptr);
@@ -215,7 +214,7 @@ void CSizingControlBarCF::NcPaintGripper(CDC* pDC, CRect rcClient)
 
 LRESULT CSizingControlBarCF::OnSetText(WPARAM wParam, LPARAM lParam)
 {
-    LRESULT lResult = baseCSizingControlBarCF::OnSetText(wParam, lParam);
+    LRESULT lResult = __super::OnSetText(wParam, lParam);
 
     SendMessage(WM_NCPAINT);
 

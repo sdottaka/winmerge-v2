@@ -69,9 +69,14 @@ void SetComboBoxWidth(CComboBox &Control, LPCTSTR lpszText = nullptr)
 
   if(!cnt)
     return;
+
+  HMONITOR monitor = MonitorFromWindow(Control.m_hWnd, MONITOR_DEFAULTTONEAREST);
+  MONITORINFO info{ sizeof MONITORINFO };
+  GetMonitorInfo(monitor, &info);
+
   CClientDC      dc(&Control);
   CFont        *oldFont;
-  int          width = 0, nMax = ::GetSystemMetrics(SM_CXSCREEN) - 48;
+  int          width = 0, nMax = info.rcMonitor.right - 48;
   CRect        rc;
   CSize        size;
 

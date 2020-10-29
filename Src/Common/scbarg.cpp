@@ -68,14 +68,14 @@ void CSizingControlBarG::OnNcLButtonUp(UINT nHitTest, CPoint point)
     if (nHitTest == HTCLOSE)
         m_pDockSite->ShowControlBar(this, FALSE, FALSE); // hide
 
-    baseCSizingControlBarG::OnNcLButtonUp(nHitTest, point);
+    __super::OnNcLButtonUp(nHitTest, point);
 }
 
 void CSizingControlBarG::NcCalcClient(LPRECT pRc, UINT nDockBarID)
 {
     CRect rcBar(pRc); // save the bar rect
     // subtract edges
-    baseCSizingControlBarG::NcCalcClient(pRc, nDockBarID);
+    __super::NcCalcClient(pRc, nDockBarID);
 
     if (!HasGripper())
         return;
@@ -85,20 +85,17 @@ void CSizingControlBarG::NcCalcClient(LPRECT pRc, UINT nDockBarID)
     bool bHorz = (nDockBarID == AFX_IDW_DOCKBAR_TOP) ||
                  (nDockBarID == AFX_IDW_DOCKBAR_BOTTOM);
 
-    const int lpx = CClientDC(this).GetDeviceCaps(LOGPIXELSX);
-    auto pointToPixel = [lpx](double point) { return static_cast<int>(point * lpx / 72); };
-
     if (bHorz)
-        rc.DeflateRect(pointToPixel(m_dblGripper), 0, 0, 0);
+        rc.DeflateRect(PointToPixel(m_dblGripper), 0, 0, 0);
     else
-        rc.DeflateRect(0, pointToPixel(m_dblGripper), 0, 0);
+        rc.DeflateRect(0, PointToPixel(m_dblGripper), 0, 0);
 
     // set position for the "x" (hide bar) button
     CPoint ptOrgBtn;
     if (bHorz)
-        ptOrgBtn = CPoint(rc.left - pointToPixel(9.75), rc.top);
+        ptOrgBtn = CPoint(rc.left - PointToPixel(9.75), rc.top);
     else
-        ptOrgBtn = CPoint(rc.right - pointToPixel(9.0), rc.top - pointToPixel(9.75));
+        ptOrgBtn = CPoint(rc.right - PointToPixel(9.0), rc.top - PointToPixel(9.75));
 
     m_biHide.Move(ptOrgBtn - rcBar.TopLeft());
 
@@ -112,30 +109,29 @@ void CSizingControlBarG::NcPaintGripper(CDC* pDC, CRect rcClient)
 
     // paints a simple "two raised lines" gripper
     // override this if you want a more sophisticated gripper
-    const int lpx = pDC->GetDeviceCaps(LOGPIXELSX);
-    auto pointToPixel = [lpx](double point) { return static_cast<int>(point * lpx / 72); };
+    auto PointToPixel = [dpi = GetDpi()](double point) { return static_cast<int>(point * dpi / 72); };
     CRect gripper = rcClient;
-    CRect rcbtn(m_biHide.ptOrg, CSize(pointToPixel(m_biHide.dblBoxSize), pointToPixel(m_biHide.dblBoxSize)));
+    CRect rcbtn(m_biHide.ptOrg, CSize(PointToPixel(m_biHide.dblBoxSize), PointToPixel(m_biHide.dblBoxSize)));
     bool bHorz = IsHorzDocked();
 
     gripper.DeflateRect(1, 1);
     if (bHorz)
     {   // gripper at left
-        gripper.left -= pointToPixel(m_dblGripper);
-        gripper.right = gripper.left + pointToPixel(2.25);
-        gripper.top = rcbtn.bottom + pointToPixel(2.25);
+        gripper.left -= PointToPixel(m_dblGripper);
+        gripper.right = gripper.left + PointToPixel(2.25);
+        gripper.top = rcbtn.bottom + PointToPixel(2.25);
     }
     else
     {   // gripper at top
-        gripper.top -= pointToPixel(m_dblGripper);
-        gripper.bottom = gripper.top + pointToPixel(2.25);
-        gripper.right = rcbtn.left - pointToPixel(2.25);
+        gripper.top -= PointToPixel(m_dblGripper);
+        gripper.bottom = gripper.top + PointToPixel(2.25);
+        gripper.right = rcbtn.left - PointToPixel(2.25);
     }
 
     pDC->Draw3dRect(gripper, ::GetSysColor(COLOR_BTNHIGHLIGHT),
         ::GetSysColor(COLOR_BTNSHADOW));
 
-    gripper.OffsetRect(bHorz ? pointToPixel(2.25) : 0, bHorz ? 0 : pointToPixel(2.25));
+    gripper.OffsetRect(bHorz ? PointToPixel(2.25) : 0, bHorz ? 0 : PointToPixel(2.25));
 
     pDC->Draw3dRect(gripper, ::GetSysColor(COLOR_BTNHIGHLIGHT),
         ::GetSysColor(COLOR_BTNSHADOW));
@@ -148,13 +144,12 @@ NCHITTEST_RESULT CSizingControlBarG::OnNcHitTest(CPoint point)
     CRect rcBar;
     GetWindowRect(rcBar);
 
-    LRESULT nRet = baseCSizingControlBarG::OnNcHitTest(point);
+    LRESULT nRet = __super::OnNcHitTest(point);
     if (nRet != HTCLIENT)
         return nRet;
 
-    const int lpx = CClientDC(this).GetDeviceCaps(LOGPIXELSX);
-    auto pointToPixel = [lpx](double point) { return static_cast<int>(point * lpx / 72); };
-    CRect rc(m_biHide.ptOrg, CSize(pointToPixel(m_biHide.dblBoxSize), pointToPixel(m_biHide.dblBoxSize)));
+    auto PointToPixel = [dpi = GetDpi()](double point) { return static_cast<int>(point * dpi / 72); };
+    CRect rc(m_biHide.ptOrg, CSize(PointToPixel(m_biHide.dblBoxSize), PointToPixel(m_biHide.dblBoxSize)));
     rc.OffsetRect(rcBar.TopLeft());
     if (rc.PtInRect(point))
         return HTCLOSE;
@@ -205,9 +200,9 @@ CSCBButton::CSCBButton()
 
 void CSCBButton::Paint(CDC* pDC)
 {
-    const int lpx = pDC->GetDeviceCaps(LOGPIXELSX);
-    auto pointToPixel = [lpx](double point) { return static_cast<int>(point * lpx / 72); };
-    CRect rc(ptOrg, CSize(pointToPixel(dblBoxSize), pointToPixel(dblBoxSize)));
+    const int dpi = DpiAware::GetDpiForWindow(AfxGetMainWnd()->m_hWnd);
+    auto PointToPixel = [dpi](double point) { return static_cast<int>(point * dpi / 72); };
+    CRect rc(ptOrg, CSize(PointToPixel(dblBoxSize), PointToPixel(dblBoxSize)));
 
     if (bPushed)
         pDC->Draw3dRect(rc, ::GetSysColor(COLOR_BTNSHADOW),
@@ -221,10 +216,12 @@ void CSCBButton::Paint(CDC* pDC)
     pDC->SetTextColor(::GetSysColor(COLOR_BTNTEXT));
     int nPrevBkMode = pDC->SetBkMode(TRANSPARENT);
     CFont font;
-    font.CreatePointFont(60/*6 points*/, _T("Marlett"));
+    LOGFONT lf;
+    DpiAware::GetPointLogFont(lf, 6, _T("Marlett"), dpi);
+    font.CreateFontIndirect(&lf);
     CFont* oldfont = pDC->SelectObject(&font);
 
-    pDC->TextOut(ptOrg.x + pointToPixel(1.5), ptOrg.y + pointToPixel(1.5), CString(_T("r"))); // x-like
+    pDC->TextOut(ptOrg.x + PointToPixel(1.5), ptOrg.y + PointToPixel(1.5), CString(_T("r"))); // x-like
 
     pDC->SelectObject(oldfont);
     pDC->SetBkMode(nPrevBkMode);

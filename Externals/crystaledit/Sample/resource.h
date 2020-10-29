@@ -51,6 +51,9 @@
 #define ID_EDIT_DISABLEDRAGANDDROP      32797
 #define ID_EDIT_FIND_PREVIOUS           32799
 #define ID_VIEW_WHITESPACE              32800
+#define ID_WINDOW_SPLIT_VERTICALLY      32801
+#define ID_WINDOW_SPLIT_HORIZONTALLY    32802
+#define ID_WINDOW_COMBINE               32803
 #define ID_EDIT_INDICATOR_COL           37900
 #define ID_READ_ONLY                    37901
 #define ID_INDICATOR_ENCODING           37905
@@ -62,7 +65,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        135
-#define _APS_NEXT_COMMAND_VALUE         32802
+#define _APS_NEXT_COMMAND_VALUE         32804
 #define _APS_NEXT_CONTROL_VALUE         1001
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

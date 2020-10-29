@@ -5,6 +5,7 @@
 #include "OptionsDef.h"
 #include "OptionsMgr.h"
 #include "MergeFrameCommon.h"
+#include "MainFrm.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -39,7 +40,7 @@ COpenFrame::~COpenFrame()
 BOOL COpenFrame::PreCreateWindow(CREATESTRUCT& cs)
 {
 	// TODO: Modify the Window class or styles here by modifying the CREATESTRUCT cs
-	if( !CMDIChildWnd::PreCreateWindow(cs) )
+	if( !__super::PreCreateWindow(cs) )
 		return FALSE;
 	cs.style |= WS_CLIPCHILDREN;
 	return TRUE;
@@ -74,7 +75,8 @@ LRESULT COpenFrame::OnNcHitTest(CPoint point)
 void COpenFrame::OnWindowPosChanging(WINDOWPOS* lpwndpos)
 {
 	// Retain frame sizes during tile operations (tolerate overlapping)
-	if ((lpwndpos->flags & (SWP_NOSIZE | SWP_NOOWNERZORDER)) == 0 && !IsZoomed())
+	if ((lpwndpos->flags & (SWP_NOSIZE | SWP_NOOWNERZORDER)) == 0 &&
+	    !(IsZoomed() || GetMainFrame()->GetLayoutManager().GetTileLayoutEnabled()))
 	{
 		if (CScrollView *const pView = static_cast<CScrollView*>(GetActiveView()))
 		{
@@ -89,19 +91,22 @@ void COpenFrame::OnWindowPosChanging(WINDOWPOS* lpwndpos)
 
 void COpenFrame::ActivateFrame(int nCmdShow) 
 {
-	CMergeFrameCommon::ActivateFrame(nCmdShow);
-	if (CView *const pView = GetActiveView())
+	__super::ActivateFrame(nCmdShow);
+	if (!GetMainFrame()->GetLayoutManager().GetTileLayoutEnabled())
 	{
-		WINDOWPLACEMENT wp;
-		wp.length = sizeof wp;
-		GetWindowPlacement(&wp);
-		CRect rc;
-		pView->GetWindowRect(&rc);
-		CalcWindowRect(&rc, CWnd::adjustOutside);
-		wp.rcNormalPosition.right = wp.rcNormalPosition.left + rc.Width();
-		wp.rcNormalPosition.bottom = wp.rcNormalPosition.top + rc.Height();
-		SetWindowPlacement(&wp);
-		pView->ShowWindow(SW_SHOW);
+		if (CView* const pView = GetActiveView())
+		{
+			WINDOWPLACEMENT wp;
+			wp.length = sizeof wp;
+			GetWindowPlacement(&wp);
+			CRect rc;
+			pView->GetWindowRect(&rc);
+			CalcWindowRect(&rc, CWnd::adjustOutside);
+			wp.rcNormalPosition.right = wp.rcNormalPosition.left + rc.Width();
+			wp.rcNormalPosition.bottom = wp.rcNormalPosition.top + rc.Height();
+			SetWindowPlacement(&wp);
+			pView->ShowWindow(SW_SHOW);
+		}
 	}
 }
 
@@ -118,7 +123,7 @@ void COpenFrame::UpdateResources()
 BOOL COpenFrame::DestroyWindow() 
 {
 	SaveWindowState();
-	return CMDIChildWnd::DestroyWindow();
+	return __super::DestroyWindow();
 }
 
 // COpenFrame message handlers

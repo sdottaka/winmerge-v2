@@ -12,6 +12,7 @@
 #pragma once
 
 #include "FilepathEdit.h"
+#include "utils/DpiAware.h"
 #include <functional>
 
 /**
@@ -35,7 +36,7 @@ public:
  * The bar looks like a statusBar (font, height). The control
  * displays a tip for each path (as a tooltip). 
  */
-class CEditorFilePathBar : public CDialogBar, public IHeaderBar
+class CEditorFilePathBar : public DpiAware::CDpiAwareWnd<CDialogBar>, public IHeaderBar
 {
 public : 
 	CEditorFilePathBar();
@@ -61,6 +62,7 @@ protected:
 	//{{AFX_MSG(CEditorFilePathBar)
 	afx_msg BOOL OnToolTipNotify( UINT id, NMHDR * pTTTStruct, LRESULT * pResult );
 	afx_msg void OnSetFocusEdit(UINT id);
+	afx_msg LRESULT OnDpiChangedBeforeParent(WPARAM, LPARAM);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP();
 

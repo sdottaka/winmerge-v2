@@ -59,8 +59,11 @@ public:
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 	afx_msg void OnBnClickedWWW(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg LRESULT OnDpiChanged(WPARAM wParam, LPARAM lParam);
 
 private:
+	void RecreateResources();
+
 	CAboutDlg *const m_p;
 	ATL::CImage m_image;
 	CFont m_font;
@@ -74,18 +77,13 @@ BEGIN_MESSAGE_MAP(CAboutDlg::Impl, CTrDialog)
 	ON_WM_ERASEBKGND()
 	ON_WM_CTLCOLOR()
 	ON_NOTIFY(NM_CLICK, IDC_WWW, OnBnClickedWWW)
+	ON_MESSAGE(WM_DPICHANGED, OnDpiChanged)
 END_MESSAGE_MAP()
 
 CAboutDlg::Impl::Impl(CAboutDlg *p, CWnd* pParent /*= nullptr*/)
 	: CTrDialog(CAboutDlg::Impl::IDD)
 	, m_p(p)
 {
-	m_font.CreatePointFont(10 * 10, _T("Tahoma"));
-	LOGFONT lf = { 0 };
-	lf.lfHeight = 14 * 10;
-	lf.lfWeight = FW_BOLD;
-	_tcscpy_s(lf.lfFaceName, _T("Courier New"));
-	m_font_gnu_ascii.CreatePointFontIndirect(&lf);
 }
 
 void CAboutDlg::Impl::DoDataExchange(CDataExchange* pDX)
@@ -109,8 +107,8 @@ BOOL CAboutDlg::Impl::OnInitDialog()
 		// FIXME: LoadImageFromResource() seems to fail when running on Wine 5.0.
 	}
 
-	GetDlgItem(IDC_VERSION)->SetFont(&m_font);
-	GetDlgItem(IDC_GNU_ASCII)->SetFont(&m_font_gnu_ascii);
+	RecreateResources();
+
 	::SetDlgItemTextA(m_hWnd, IDC_GNU_ASCII, gnu_ascii);
 
 	String link;
@@ -166,6 +164,37 @@ void CAboutDlg::Impl::OnBnClickedWWW(NMHDR *pNMHDR, LRESULT *pResult)
 {
 	PNMLINK pNMLink = (PNMLINK)pNMHDR;
 	ShellExecute(nullptr, _T("open"), pNMLink->item.szUrl, nullptr, nullptr, SW_SHOWNORMAL);
+}
+
+LRESULT CAboutDlg::Impl::OnDpiChanged(WPARAM wParam, LPARAM lParam)
+{
+	CTrDialog::OnDpiChanged(wParam, lParam);
+	RecreateResources();
+	Invalidate();
+	return 0;
+}
+
+void CAboutDlg::Impl::RecreateResources()
+{
+	if (!GetDlgItem(IDC_VERSION))
+		return;
+	
+	const int dpi = GetDpi();
+
+	LOGFONT lfv{};
+	DpiAware::GetPointLogFont(lfv, 10, _T("Tahoma"), dpi);
+	lfv.lfWeight = FW_NORMAL;
+	m_font.DeleteObject();
+	m_font.CreateFontIndirect(&lfv);
+
+	LOGFONT lf{};
+	DpiAware::GetPointLogFont(lf, 14, _T("Courier New"), dpi);
+	lf.lfWeight = FW_BOLD;
+	m_font_gnu_ascii.DeleteObject();
+	m_font_gnu_ascii.CreateFontIndirect(&lf);
+
+	GetDlgItem(IDC_VERSION)->SetFont(&m_font);
+	GetDlgItem(IDC_GNU_ASCII)->SetFont(&m_font_gnu_ascii);
 }
 
 CAboutDlg::CAboutDlg() : m_pimpl(new CAboutDlg::Impl(this)) {}

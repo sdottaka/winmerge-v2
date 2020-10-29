@@ -103,6 +103,7 @@ public:
 	virtual void MeasureItem( LPMEASUREITEMSTRUCT );  // Measure an item
 
 	// Static functions used for handling menu's in the mainframe
+	static bool ReopenTheme(int dpi);
 	static void UpdateMenu(CMenu *pmenu);
 	static bool IsMenu(CMenu *submenu)
 	{

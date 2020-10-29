@@ -158,7 +158,7 @@ const CMainFrame::MENUITEM_ICON CMainFrame::m_MenuIcons[] = {
 
 IMPLEMENT_DYNAMIC(CMainFrame, CMDIFrameWnd)
 
-BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
+BEGIN_MESSAGE_MAP(CMainFrame, DpiAware::CDpiAwareWnd<CMDIFrameWnd>)
 	//{{AFX_MSG_MAP(CMainFrame)
 	ON_WM_MENUCHAR()
 	ON_WM_MEASUREITEM()
@@ -223,6 +223,11 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_MRU_FIRST, OnUpdateNoMRUs)
 	ON_UPDATE_COMMAND_UI(ID_NO_MRU, OnUpdateNoMRUs)
 	ON_COMMAND(ID_ACCEL_QUIT, &CMainFrame::OnAccelQuit)
+	ON_MESSAGE(WM_DPICHANGED, OnDpiChanged)
+	ON_COMMAND_EX(ID_WINDOW_ARRANGE, OnMDIWindowCmd)
+	ON_COMMAND_EX(ID_WINDOW_CASCADE, OnMDIWindowCmd)
+	ON_COMMAND_EX(ID_WINDOW_TILE_HORZ, OnMDIWindowCmd)
+	ON_COMMAND_EX(ID_WINDOW_TILE_VERT, OnMDIWindowCmd)
 	//}}AFX_MSG_MAP
 	ON_MESSAGE(WMU_CHILDFRAMEADDED, &CMainFrame::OnChildFrameAdded)
 	ON_MESSAGE(WMU_CHILDFRAMEREMOVED, &CMainFrame::OnChildFrameRemoved)
@@ -270,7 +275,9 @@ CMainFrame::CMainFrame()
 , m_bShowErrors(false)
 , m_lfDiff(Options::Font::Load(GetOptionsMgr(), OPT_FONT_FILECMP))
 , m_lfDir(Options::Font::Load(GetOptionsMgr(), OPT_FONT_DIRCMP))
+, m_layoutManager(this)
 {
+	m_layoutManager.SetTileLayoutEnabled(true);
 }
 
 CMainFrame::~CMainFrame()
@@ -290,7 +297,7 @@ const TCHAR CMainFrame::szClassName[] = _T("WinMergeWindowClassW");
 BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 {
 	WNDCLASS wndcls;
-	BOOL bRes = CMDIFrameWnd::PreCreateWindow(cs);
+	BOOL bRes = __super::PreCreateWindow(cs);
 	HINSTANCE hInst = AfxGetInstanceHandle();
 	// see if the class already exists
 	if (!::GetClassInfo(hInst, szClassName, &wndcls))
@@ -308,10 +315,11 @@ BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 
 int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
-	if (CMDIFrameWnd::OnCreate(lpCreateStruct) == -1)
+	if (__super::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
 	m_wndMDIClient.SubclassWindow(m_hWndMDIClient);
+	m_wndMDIClient.UpdateDpi();
 
 	if (!CreateToolbar())
 	{
@@ -327,7 +335,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_wndTabBar.SetAutoMaxWidth(GetOptionsMgr()->GetBool(OPT_TABBAR_AUTO_MAXWIDTH));
 
 	if (!GetOptionsMgr()->GetBool(OPT_SHOW_TABBAR))
-		CMDIFrameWnd::ShowControlBar(&m_wndTabBar, false, 0);
+		__super::ShowControlBar(&m_wndTabBar, false, 0);
 
 	if (!m_wndStatusBar.Create(this))
 	{
@@ -337,15 +345,13 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	theApp.SetIndicators(m_wndStatusBar, StatusbarIndicators,
 			static_cast<int>(std::size(StatusbarIndicators)));
 
-	const int lpx = CClientDC(this).GetDeviceCaps(LOGPIXELSX);
-	auto pointToPixel = [lpx](int point) { return MulDiv(point, lpx, 72); };
 	m_wndStatusBar.SetPaneInfo(0, 0, SBPS_STRETCH | SBPS_NOBORDERS, 0);
-	m_wndStatusBar.SetPaneInfo(1, ID_STATUS_PLUGIN, 0, pointToPixel(225));
-	m_wndStatusBar.SetPaneInfo(2, ID_STATUS_MERGINGMODE, 0, pointToPixel(75)); 
-	m_wndStatusBar.SetPaneInfo(3, ID_STATUS_DIFFNUM, 0, pointToPixel(112)); 
+	m_wndStatusBar.SetPaneInfo(1, ID_STATUS_PLUGIN, 0, PointToPixel(225));
+	m_wndStatusBar.SetPaneInfo(2, ID_STATUS_MERGINGMODE, 0, PointToPixel(75)); 
+	m_wndStatusBar.SetPaneInfo(3, ID_STATUS_DIFFNUM, 0, PointToPixel(112)); 
 
 	if (!GetOptionsMgr()->GetBool(OPT_SHOW_STATUSBAR))
-		CMDIFrameWnd::ShowControlBar(&m_wndStatusBar, false, 0);
+		__super::ShowControlBar(&m_wndStatusBar, false, 0);
 
 	m_pDropHandler = new DropHandler(std::bind(&CMainFrame::OnDropFiles, this, std::placeholders::_1));
 	RegisterDragDrop(m_hWnd, m_pDropHandler);
@@ -357,7 +363,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 void CMainFrame::OnTimer(UINT_PTR nIDEvent)
 {
-	CMDIFrameWnd::OnTimer(nIDEvent);
+	__super::OnTimer(nIDEvent);
 
 	if (nIDEvent == IDT_UPDATEMAINMENU)
 	{
@@ -562,7 +568,7 @@ void CMainFrame::OnMeasureItem(int nIDCtl,
 	}
 
 	if (!setflag)
-		CMDIFrameWnd::OnMeasureItem(nIDCtl, lpMeasureItemStruct);
+		__super::OnMeasureItem(nIDCtl, lpMeasureItemStruct);
 }
 
 /**
@@ -575,7 +581,7 @@ LRESULT CMainFrame::OnMenuChar(UINT nChar, UINT nFlags,
 	if(m_pMenus[MENU_DEFAULT]->IsMenu(pMenu))
 		lresult=BCMenu::FindKeyboardShortcut(nChar, nFlags, pMenu);
 	else
-		lresult=CMDIFrameWnd::OnMenuChar(nChar, nFlags, pMenu);
+		lresult=__super::OnMenuChar(nChar, nFlags, pMenu);
 	return lresult;
 }
 
@@ -584,7 +590,7 @@ LRESULT CMainFrame::OnMenuChar(UINT nChar, UINT nFlags,
  */
 void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu) 
 {
-	CMDIFrameWnd::OnInitMenuPopup(pPopupMenu, nIndex, bSysMenu);
+	__super::OnInitMenuPopup(pPopupMenu, nIndex, bSysMenu);
 	
 	if (!bSysMenu)
 	{
@@ -1172,7 +1178,7 @@ void CMainFrame::ActivateFrame(int nCmdShow)
 {
 	if (!m_bFirstTime)
 	{
-		CMDIFrameWnd::ActivateFrame(nCmdShow);
+		__super::ActivateFrame(nCmdShow);
 		return;
 	}
 
@@ -1192,10 +1198,10 @@ void CMainFrame::ActivateFrame(int nCmdShow)
 
 	CRect dsk_rc,rc(wp.rcNormalPosition);
 
-	dsk_rc.left = ::GetSystemMetrics(SM_XVIRTUALSCREEN);
-	dsk_rc.top = ::GetSystemMetrics(SM_YVIRTUALSCREEN);
-	dsk_rc.right = dsk_rc.left + ::GetSystemMetrics(SM_CXVIRTUALSCREEN);
-	dsk_rc.bottom = dsk_rc.top + ::GetSystemMetrics(SM_CYVIRTUALSCREEN);
+	dsk_rc.left = GetSystemMetrics(SM_XVIRTUALSCREEN);
+	dsk_rc.top = GetSystemMetrics(SM_YVIRTUALSCREEN);
+	dsk_rc.right = dsk_rc.left + GetSystemMetrics(SM_CXVIRTUALSCREEN);
+	dsk_rc.bottom = dsk_rc.top + GetSystemMetrics(SM_CYVIRTUALSCREEN);
 	if (rc.Width() != 0 && rc.Height() != 0)
 	{
 		// Ensure top-left corner is on visible area,
@@ -1206,10 +1212,10 @@ void CMainFrame::ActivateFrame(int nCmdShow)
 		if (dsk_rc.PtInRect(ptTopLeft))
 			SetWindowPlacement(&wp);
 		else
-			CMDIFrameWnd::ActivateFrame(nCmdShow);
+			__super::ActivateFrame(nCmdShow);
 	}
 	else
-		CMDIFrameWnd::ActivateFrame(nCmdShow);
+		__super::ActivateFrame(nCmdShow);
 }
 
 /**
@@ -1251,7 +1257,7 @@ void CMainFrame::OnClose()
 			return;
 	}
 
-	CMDIFrameWnd::OnClose();
+	__super::OnClose();
 }
 
 /**
@@ -1731,7 +1737,7 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 		return TRUE;
 	}
 
-	return CMDIFrameWnd::PreTranslateMessage(pMsg);
+	return __super::PreTranslateMessage(pMsg);
 }
 
 /**
@@ -1742,7 +1748,7 @@ void CMainFrame::OnViewStatusBar()
 	bool bShow = !GetOptionsMgr()->GetBool(OPT_SHOW_STATUSBAR);
 	GetOptionsMgr()->SaveOption(OPT_SHOW_STATUSBAR, bShow);
 
-	CMDIFrameWnd::ShowControlBar(&m_wndStatusBar, bShow, 0);
+	__super::ShowControlBar(&m_wndStatusBar, bShow, 0);
 }
 
 /**
@@ -1761,7 +1767,7 @@ void CMainFrame::OnViewTabBar()
 	bool bShow = !GetOptionsMgr()->GetBool(OPT_SHOW_TABBAR);
 	GetOptionsMgr()->SaveOption(OPT_SHOW_TABBAR, bShow);
 
-	CMDIFrameWnd::ShowControlBar(&m_wndTabBar, bShow, 0);
+	__super::ShowControlBar(&m_wndTabBar, bShow, 0);
 }
 
 /**
@@ -1964,9 +1970,9 @@ void CMainFrame::OnActivateApp(BOOL bActive, HTASK hTask)
 #endif
 {
 #if _MFC_VER > 0x0600
-	CMDIFrameWnd::OnActivateApp(bActive, dwThreadID);
+	__super::OnActivateApp(bActive, dwThreadID);
 #else
-	CMDIFrameWnd::OnActivateApp(bActive, hTask);
+	__super::OnActivateApp(bActive, hTask);
 #endif
 
 	CFrameWnd * pFrame = GetActiveFrame();
@@ -2014,7 +2020,7 @@ BOOL CMainFrame::CreateToolbar()
 
 	if (!GetOptionsMgr()->GetBool(OPT_SHOW_TOOLBAR))
 	{
-		CMDIFrameWnd::ShowControlBar(&m_wndToolBar, false, 0);
+		__super::ShowControlBar(&m_wndToolBar, false, 0);
 	}
 
 	return TRUE;
@@ -2095,7 +2101,7 @@ void CMainFrame::OnToolbarSize(UINT id)
 	if (id == ID_TOOLBAR_NONE)
 	{
 		GetOptionsMgr()->SaveOption(OPT_SHOW_TOOLBAR, false);
-		CMDIFrameWnd::ShowControlBar(&m_wndToolBar, false, 0);
+		__super::ShowControlBar(&m_wndToolBar, false, 0);
 	}
 	else
 	{
@@ -2104,7 +2110,7 @@ void CMainFrame::OnToolbarSize(UINT id)
 
 		LoadToolbarImages();
 
-		CMDIFrameWnd::ShowControlBar(&m_wndToolBar, true, 0);
+		__super::ShowControlBar(&m_wndToolBar, true, 0);
 	}
 }
 
@@ -2571,6 +2577,31 @@ void CMainFrame::OnAccelQuit()
 	SendMessage(WM_CLOSE);
 }
 
+LRESULT CMainFrame::OnDpiChanged(WPARAM wParam, LPARAM lParam)
+{
+	int olddpi = m_dpi;
+
+	__super::OnDpiChanged(wParam, lParam);
+
+	DpiAware::UpdateAfxDataSysMetrics(m_dpi);
+	BCMenu::ReopenTheme(m_dpi);
+
+	m_lfDiff.lfHeight = MulDiv(m_lfDiff.lfHeight, m_dpi, olddpi);
+	m_lfDir.lfHeight = MulDiv(m_lfDir.lfHeight, m_dpi, olddpi);
+	
+	UpdateFont(FRAME_FILE);
+	UpdateFont(FRAME_FOLDER);
+
+	LoadToolbarImages();
+
+	const RECT* pRect = reinterpret_cast<RECT*>(lParam);
+	SetWindowPos(nullptr, pRect->left, pRect->top,
+		pRect->right - pRect->left,
+		pRect->bottom - pRect->top, SWP_NOZORDER | SWP_NOACTIVATE);
+
+	return 0;
+}
+
 LRESULT CMainFrame::OnChildFrameAdded(WPARAM wParam, LPARAM lParam)
 {
 	for (int i = 0; i < m_arrChild.GetSize(); ++i)
@@ -2632,3 +2663,24 @@ LRESULT CMainFrame::OnChildFrameActivated(WPARAM wParam, LPARAM lParam)
 
 	return 1;
 }
+
+BOOL CMainFrame::OnMDIWindowCmd(UINT nID)
+{
+	switch (nID)
+	{
+	case ID_WINDOW_TILE_HORZ:
+	case ID_WINDOW_TILE_VERT:
+	{
+		bool bHorizontal = (nID == ID_WINDOW_TILE_HORZ);
+		m_layoutManager.SetTileLayoutEnabled(true);
+		m_layoutManager.Tile(bHorizontal);
+		break;
+	}
+	case ID_WINDOW_CASCADE:
+		m_layoutManager.SetTileLayoutEnabled(false);
+		__super::OnMDIWindowCmd(nID);
+		break;
+	}
+	return 0;
+}
+

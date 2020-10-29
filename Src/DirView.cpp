@@ -118,7 +118,7 @@ CDirView::~CDirView()
 {
 }
 
-BEGIN_MESSAGE_MAP(CDirView, CListView)
+BEGIN_MESSAGE_MAP(CDirView, DpiAware::CDpiAwareWnd<CListView>)
 	ON_WM_CONTEXTMENU()
 	//{{AFX_MSG_MAP(CDirView)
 	ON_WM_LBUTTONDBLCLK()
@@ -334,6 +334,7 @@ BEGIN_MESSAGE_MAP(CDirView, CListView)
 	ON_BN_CLICKED(IDC_COMPARISON_STOP, OnBnClickedComparisonStop)
 	ON_BN_CLICKED(IDC_COMPARISON_PAUSE, OnBnClickedComparisonPause)
 	ON_BN_CLICKED(IDC_COMPARISON_CONTINUE, OnBnClickedComparisonContinue)
+	ON_MESSAGE(WM_DPICHANGED_BEFOREPARENT, OnDpiChangedBeforeParent)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -353,7 +354,7 @@ CDirDoc* CDirView::GetDocument() // non-debug version is inline
 
 void CDirView::OnInitialUpdate()
 {
-	const int iconCX = []() {
+	const int iconCX = [this]() {
 		const int cx = GetSystemMetrics(SM_CXSMICON);
 		if (cx < 24)
 			return 16;
@@ -364,7 +365,7 @@ void CDirView::OnInitialUpdate()
 		return 48;
 	}();
 	const int iconCY = iconCX;
-	CListView::OnInitialUpdate();
+	__super::OnInitialUpdate();
 	m_pList = &GetListCtrl();
 	m_pIList.reset(new IListCtrlImpl(m_pList->m_hWnd));
 	GetDocument()->SetDirView(this);
@@ -431,7 +432,7 @@ void CDirView::OnInitialUpdate()
 
 BOOL CDirView::PreCreateWindow(CREATESTRUCT& cs)
 {
-	CListView::PreCreateWindow(cs);
+	__super::PreCreateWindow(cs);
 	cs.dwExStyle &= ~WS_EX_CLIENTEDGE;
 	return TRUE;
 }
@@ -483,7 +484,7 @@ void CDirView::OnLButtonDblClk(UINT nFlags, CPoint point)
 			OpenSelection();
 		}
 	}
-	CListView::OnLButtonDblClk(nFlags, point);
+	__super::OnLButtonDblClk(nFlags, point);
 }
 
 /**
@@ -1118,7 +1119,7 @@ void CDirView::OnDestroy()
 			m_pColItems->SaveColumnWidths(std::bind(&CListCtrl::GetColumnWidth, m_pList, _1)));
 	}
 
-	CListView::OnDestroy();
+	__super::OnDestroy();
 
 	GetMainFrame()->ClearStatusbarItemCount();
 }
@@ -1148,7 +1149,7 @@ void CDirView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 			}
 		}
 	}
-	CListView::OnChar(nChar, nRepCnt, nFlags);
+	__super::OnChar(nChar, nRepCnt, nFlags);
 }
 
 /**
@@ -2149,7 +2150,7 @@ CDirFrame * CDirView::GetParentFrame()
 {
 	// can't verify cast without introducing more coupling
 	// (CDirView doesn't include DirFrame.h)
-	return static_cast<CDirFrame *>(CListView::GetParentFrame());
+	return static_cast<CDirFrame *>(__super::GetParentFrame());
 }
 
 void CDirView::OnRefresh()
@@ -2260,7 +2261,7 @@ BOOL CDirView::PreTranslateMessage(MSG* pMsg)
 			}
 		}
 	}
-	return CListView::PreTranslateMessage(pMsg);
+	return __super::PreTranslateMessage(pMsg);
 }
 
 void CDirView::OnUpdateRefresh(CCmdUI* pCmdUI)
@@ -2346,7 +2347,7 @@ BOOL CDirView::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)
 	if (hdr->code == HDN_BEGINDRAG)
 		return OnHeaderBeginDrag((LPNMHEADER)hdr, pResult);
 
-	return CListView::OnNotify(wParam, lParam, pResult);
+	return __super::OnNotify(wParam, lParam, pResult);
 }
 
 BOOL CDirView::OnChildNotify(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
@@ -2364,7 +2365,7 @@ BOOL CDirView::OnChildNotify(UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT* p
 			return TRUE;
 		}
 	}
-	return CListView::OnChildNotify(uMsg, wParam, lParam, pResult);
+	return __super::OnChildNotify(uMsg, wParam, lParam, pResult);
 }
 
 /**
@@ -2395,6 +2396,14 @@ bool CDirView::OnHeaderEndDrag(LPNMHEADER hdr, LRESULT* pResult)
 		InitiateSort();
 	}
 	return true;
+}
+
+LRESULT CDirView::OnDpiChangedBeforeParent(WPARAM wParam, LPARAM lParam)
+{
+	int olddpi = m_dpi;
+	__super::OnDpiChangedBeforeParent(wParam, lParam);
+	DpiAware::ListView_UpdateColumnWidths(m_hWnd, olddpi, m_dpi);
+	return 0;
 }
 
 /**
@@ -2477,7 +2486,7 @@ void CDirView::OnTimer(UINT_PTR nIDEvent)
 		GetParentFrame()->SetStatus(msg.c_str());
 	}
 	
-	CListView::OnTimer(nIDEvent);
+	__super::OnTimer(nIDEvent);
 }
 
 /**
@@ -3071,7 +3080,7 @@ void CDirView::OnUpdateCtxtDirMoveTo(CCmdUI* pCmdUI)
  */
 void CDirView::OnSize(UINT nType, int cx, int cy)
 {
-	CListView::OnSize(nType, cx, cy);
+	__super::OnSize(nType, cx, cy);
 	GetDocument()->SetTitle(nullptr);
 }
 
@@ -3798,7 +3807,7 @@ LRESULT CDirView::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 		pMenu->HandleMenuMessage(message, wParam, lParam, res);
 	}
 
-	return CListView::WindowProc(message, wParam, lParam);
+	return __super::WindowProc(message, wParam, lParam);
 }
 
 /**

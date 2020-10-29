@@ -23,7 +23,7 @@ T &placement_cast(void *p)
 /////////////////////////////////////////////////////////////////////////////
 // CSuperComboBox
 
-HIMAGELIST CSuperComboBox::m_himlSystem = nullptr;
+std::map<int, HIMAGELIST> CSuperComboBox::m_himlSystemMap;
 
 CSuperComboBox::CSuperComboBox()
 	: m_pDropHandler(nullptr)
@@ -66,6 +66,7 @@ BEGIN_MESSAGE_MAP(CSuperComboBox, CComboBoxEx)
 	ON_WM_DESTROY()
 	ON_WM_DRAWITEM()
 	ON_NOTIFY_REFLECT(CBEN_GETDISPINFO, OnGetDispInfo)
+	ON_MESSAGE(WM_DPICHANGED_BEFOREPARENT, OnDpiChangedBeforeParent)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -74,7 +75,8 @@ END_MESSAGE_MAP()
 
 void CSuperComboBox::PreSubclassWindow()
 {
-	CComboBoxEx::PreSubclassWindow();
+	UpdateDpi();
+	__super::PreSubclassWindow();
 	m_pDropHandler = new DropHandler(std::bind(&CSuperComboBox::OnDropFiles, this, std::placeholders::_1));
 	RegisterDragDrop(m_hWnd, m_pDropHandler);
 	
@@ -115,7 +117,7 @@ int CSuperComboBox::InsertString(int nIndex, LPCTSTR lpszItem)
 {
 	if (m_bComboBoxEx)
 	{
-		CString sShortName;		// scoped to remain valid for calling CComboBoxEx::InsertItem()
+		CString sShortName;		// scoped to remain valid for calling __super::InsertItem()
 		if (m_bExtendedFileNames)
 		{
 			if (nIndex >= static_cast<int>(m_sFullStateText.size()))
@@ -150,7 +152,7 @@ int CSuperComboBox::InsertString(int nIndex, LPCTSTR lpszItem)
 		cbitem.iItem = nIndex;
 		cbitem.iImage = I_IMAGECALLBACK;
 		cbitem.iSelectedImage = I_IMAGECALLBACK;
-		return CComboBoxEx::InsertItem(&cbitem);
+		return __super::InsertItem(&cbitem);
 	}
 	else
 	{
@@ -165,7 +167,7 @@ int CSuperComboBox::DeleteString(int nIndex)
 	{
 		m_sFullStateText.erase(m_sFullStateText.begin() + nIndex);
 	}
-	return CComboBoxEx::DeleteString(nIndex);
+	return __super::DeleteString(nIndex);
 }
 
 int CSuperComboBox::FindString(int nStartAfter, LPCTSTR lpszString) const
@@ -199,16 +201,18 @@ int CSuperComboBox::FindString(int nStartAfter, LPCTSTR lpszString) const
  */
 bool CSuperComboBox::AttachSystemImageList()
 {
+	HIMAGELIST hImageList = nullptr;
 	ASSERT(m_bComboBoxEx);
-	if (m_himlSystem==nullptr)
+	if (m_himlSystemMap.find(m_dpi) == m_himlSystemMap.end())
 	{
-		SHFILEINFO sfi = {0};
-		m_himlSystem = (HIMAGELIST)SHGetFileInfo(_T(""), 0, 
-			&sfi, sizeof(sfi), SHGFI_SMALLICON | SHGFI_SYSICONINDEX);
-		if (m_himlSystem==nullptr)
+		hImageList = DpiAware::LoadShellImageList(m_dpi);
+		if (hImageList == nullptr)
 			return false;
+		m_himlSystemMap.emplace(m_dpi, hImageList);
 	}
-	SetImageList(CImageList::FromHandle(m_himlSystem));
+	else
+		hImageList = m_himlSystemMap[m_dpi];
+	SetImageList(CImageList::FromHandle(hImageList));
 	m_bHasImageList = true;
 	return true;
 }
@@ -256,7 +260,7 @@ void CSuperComboBox::GetLBText(int nIndex, CString &rString) const
 	}
 	else
 	{
-		CComboBoxEx::GetLBText(nIndex, rString.GetBufferSetLength(GetLBTextLen(nIndex)));
+		__super::GetLBText(nIndex, rString.GetBufferSetLength(GetLBTextLen(nIndex)));
 		rString.ReleaseBuffer();
 	}
 }
@@ -269,7 +273,7 @@ int CSuperComboBox::GetLBTextLen(int nIndex) const
 	}
 	else
 	{
-		return CComboBoxEx::GetLBTextLen(nIndex);
+		return __super::GetLBTextLen(nIndex);
 	}
 }
 
@@ -419,7 +423,7 @@ BOOL CSuperComboBox::PreTranslateMessage(MSG* pMsg)
 		}
     }
 
-    return CComboBoxEx::PreTranslateMessage(pMsg);
+    return __super::PreTranslateMessage(pMsg);
 }
 
 void CSuperComboBox::SetAutoComplete(INT nSource)
@@ -463,12 +467,12 @@ void CSuperComboBox::ResetContent()
 			m_sFullStateText[i] = _T("");
 		}
 	}
-	CComboBoxEx::ResetContent();
+	__super::ResetContent();
 }
 
 int CSuperComboBox::OnCreate(LPCREATESTRUCT lpCreateStruct) 
 {
-	if (CComboBoxEx::OnCreate(lpCreateStruct) == -1)
+	if (__super::OnCreate(lpCreateStruct) == -1)
 		return -1;
 	
 	m_pDropHandler = new DropHandler(std::bind(&CSuperComboBox::OnDropFiles, this, std::placeholders::_1));
@@ -567,12 +571,12 @@ void CSuperComboBox::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruct)
 		if (!pEdit->GetModify() || GetFocus() != pEdit)
 			GetWindowText(sText);
 		int iIcon = GetFileTypeIconIndex(pvText);
-		ImageList_DrawEx(m_himlSystem, iIcon, lpDrawItemStruct->hDC,
+		ImageList_DrawEx(m_himlSystemMap[m_dpi], iIcon, lpDrawItemStruct->hDC,
 			lpDrawItemStruct->rcItem.left, lpDrawItemStruct->rcItem.top,
 			0, 0, GetSysColor(COLOR_WINDOW), CLR_NONE, ILD_NORMAL);
 		return;
 	}
-	CComboBoxEx::OnDrawItem(nIDCtl, lpDrawItemStruct);
+	__super::OnDrawItem(nIDCtl, lpDrawItemStruct);
 }
 
 /**
@@ -591,4 +595,21 @@ void CSuperComboBox::OnGetDispInfo(NMHDR *pNotifyStruct, LRESULT *pResult)
 		pDispInfo->ceItem.iSelectedImage = iIcon;
 	}
 	*pResult = 0;
+}
+
+LRESULT CSuperComboBox::OnDpiChangedBeforeParent(WPARAM wParam, LPARAM lParam)
+{
+	__super::OnDpiChangedBeforeParent(wParam, lParam);
+	if (m_bHasImageList)
+	{
+		if (m_himlSystemMap.find(m_dpi) == m_himlSystemMap.end())
+		{
+			HIMAGELIST hImageList = DpiAware::LoadShellImageList(m_dpi);
+			if (!hImageList)
+				return 0;
+			m_himlSystemMap.emplace(m_dpi, hImageList);
+		}
+		SetImageList(CImageList::FromHandle(m_himlSystemMap[m_dpi]));
+	}
+	return 0;
 }

@@ -278,17 +278,6 @@ BOOL CMergeApp::InitInstance()
 	FileTransform::g_UnpackerMode = static_cast<PLUGIN_MODE>(GetOptionsMgr()->GetInt(OPT_PLUGINS_UNPACKER_MODE));
 	FileTransform::g_PredifferMode = static_cast<PLUGIN_MODE>(GetOptionsMgr()->GetInt(OPT_PLUGINS_PREDIFFER_MODE));
 
-	NONCLIENTMETRICS ncm = { sizeof NONCLIENTMETRICS };
-	if (SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof NONCLIENTMETRICS, &ncm, 0))
-	{
-		const int lfHeight = -MulDiv(9, CClientDC(CWnd::GetDesktopWindow()).GetDeviceCaps(LOGPIXELSY), 72);
-		if (abs(ncm.lfMenuFont.lfHeight) > abs(lfHeight))
-			ncm.lfMenuFont.lfHeight = lfHeight;
-		if (wcscmp(ncm.lfMenuFont.lfFaceName, L"Meiryo") == 0 || wcscmp(ncm.lfMenuFont.lfFaceName, L"\U000030e1\U000030a4\U000030ea\U000030aa"/* "Meiryo" in Japanese */) == 0)
-			wcscpy_s(ncm.lfMenuFont.lfFaceName, L"Meiryo UI");
-		m_fontGUI.CreateFontIndirect(&ncm.lfMenuFont);
-	}
-
 	if (m_pSyntaxColors != nullptr)
 		Options::SyntaxColors::Init(GetOptionsMgr(), m_pSyntaxColors.get());
 
@@ -1202,11 +1191,36 @@ void CMergeApp::TranslateMenu(HMENU h) const
  */
 void CMergeApp::TranslateDialog(HWND h) const
 {
-	CWnd *pWnd = CWnd::FromHandle(h);
-	pWnd->SetFont(const_cast<CFont *>(&m_fontGUI));
-	pWnd->SendMessageToDescendants(WM_SETFONT, (WPARAM)m_fontGUI.m_hObject, MAKELPARAM(FALSE, 0), TRUE);
-
+	const int dpi = DpiAware::GetDpiForWindow(h);
+	ChangeDialogFont(h, dpi);
 	m_pLangDlg->TranslateDialog(h);
+}
+
+void CMergeApp::ChangeDialogFont(HWND hwnd, int dpi) const
+{
+	CWnd *pWnd = CWnd::FromHandle(hwnd);
+	CFont* pFont = GetGUIFont(dpi);
+	pWnd->SetFont(pFont);
+	pWnd->SendMessageToDescendants(WM_SETFONT, (WPARAM)pFont->m_hObject, MAKELPARAM(FALSE, 0), TRUE);
+}
+
+CFont* CMergeApp::GetGUIFont(int dpi) const
+{
+	auto adjustFont = [](auto& ncm, int dpi)
+	{
+	};
+	if (m_mapFontGUI.find(dpi) == m_mapFontGUI.end())
+	{
+		LOGFONT lfMenuFont;
+		DpiAware::GetNonClientLogFont(lfMenuFont, offsetof(NONCLIENTMETRICS, lfMenuFont), dpi);
+		const int lfHeight = -MulDiv(9, dpi, 72);
+		if (abs(lfMenuFont.lfHeight) > abs(lfHeight))
+			lfMenuFont.lfHeight = lfHeight;
+		if (wcscmp(lfMenuFont.lfFaceName, L"Meiryo") == 0 || wcscmp(lfMenuFont.lfFaceName, L"\U000030e1\U000030a4\U000030ea\U000030aa"/* "Meiryo" in Japanese */) == 0)
+			wcscpy_s(lfMenuFont.lfFaceName, L"Meiryo UI");
+		m_mapFontGUI[dpi].CreateFontIndirect(&lfMenuFont);
+	}
+	return &m_mapFontGUI[dpi];
 }
 
 /**

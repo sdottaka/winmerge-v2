@@ -68,7 +68,8 @@ static UINT indicatorsBottom[] =
 	ID_SEPARATOR,
 };
 
-BEGIN_MESSAGE_MAP(CMergeStatusBar, CStatusBar)
+BEGIN_MESSAGE_MAP(CMergeStatusBar, DpiAware::CDpiAwareWnd<CStatusBar>)
+	ON_MESSAGE(WM_DPICHANGED_BEFOREPARENT, OnDpiChangedBeforeParent)
 END_MESSAGE_MAP()
 
 /**
@@ -93,7 +94,7 @@ CMergeStatusBar::~CMergeStatusBar()
 
 BOOL CMergeStatusBar::Create(CWnd* pParentWnd)
 {
-	if (! CStatusBar::Create(pParentWnd))
+	if (! __super::Create(pParentWnd))
 		return FALSE;
 
 	SetIndicators(indicatorsBottom, sizeof(indicatorsBottom) / sizeof(UINT));
@@ -168,12 +169,10 @@ void CMergeStatusBar::Resize(int widths[])
 	// Set bottom statusbar panel widths
 	// Kimmo - I don't know why 4 seems to be right for me
 	int borderWidth = 4; // GetSystemMetrics(SM_CXEDGE);
-	const int lpx = CClientDC(this).GetDeviceCaps(LOGPIXELSX);
-	auto pointToPixel = [lpx](int point) { return MulDiv(point, lpx, 72); };
 
 	for (int pane = 0; pane < m_nPanes; pane++)
 	{
-		int paneWidth = widths[pane] - (pointToPixel(RO_PANEL_WIDTH + ENCODING_PANEL_WIDTH + EOL_PANEL_WIDTH) +
+		int paneWidth = widths[pane] - (PointToPixel(RO_PANEL_WIDTH + ENCODING_PANEL_WIDTH + EOL_PANEL_WIDTH) +
 			(3 * borderWidth));
 		if (paneWidth < borderWidth)
 			paneWidth = borderWidth;
@@ -181,11 +180,11 @@ void CMergeStatusBar::Resize(int widths[])
 		SetPaneInfo(PANE_PANE0_INFO + pane * nColumnsPerPane, ID_STATUS_PANE0FILE_INFO + pane,
 			SBPS_NORMAL, paneWidth);
 		SetPaneInfo(PANE_PANE0_ENCODING + pane * nColumnsPerPane, ID_STATUS_PANE0FILE_ENCODING + pane,
-			SBT_OWNERDRAW, pointToPixel(ENCODING_PANEL_WIDTH) - borderWidth);
+			SBT_OWNERDRAW, PointToPixel(ENCODING_PANEL_WIDTH) - borderWidth);
 		SetPaneInfo(PANE_PANE0_RO + pane * nColumnsPerPane, ID_STATUS_PANE0FILE_RO + pane,
-			SBPS_NORMAL, pointToPixel(RO_PANEL_WIDTH) - borderWidth);
+			SBPS_NORMAL, PointToPixel(RO_PANEL_WIDTH) - borderWidth);
 		SetPaneInfo(PANE_PANE0_EOL + pane * nColumnsPerPane, ID_STATUS_PANE0FILE_EOL + pane,
-			SBT_OWNERDRAW, pointToPixel(EOL_PANEL_WIDTH) - borderWidth);
+			SBT_OWNERDRAW, PointToPixel(EOL_PANEL_WIDTH) - borderWidth);
 	}
 }
 
@@ -299,3 +298,19 @@ void CMergeStatusBar::MergeStatus::SetLineInfo(LPCTSTR szLine, int nColumn,
 		Update();
 	}
 }
+
+LRESULT CMergeStatusBar::OnDpiChangedBeforeParent(WPARAM wParam, LPARAM lParam)
+{
+	__super::OnDpiChangedBeforeParent(wParam, lParam);
+	
+	if (m_font.m_hObject == GetFont()->m_hObject)
+		m_font.DeleteObject();
+
+	LOGFONT lfStatusFont;
+	if (DpiAware::GetNonClientLogFont(lfStatusFont, offsetof(NONCLIENTMETRICS, lfStatusFont), GetDpi()))
+		m_font.CreateFontIndirect(&lfStatusFont);
+
+	SetFont(&m_font);
+	return 0;
+}
+

@@ -56,7 +56,7 @@ static TCHAR OpenDlgHelpLocation[] = _T("::/htmlhelp/Open_paths.html");
 
 IMPLEMENT_DYNCREATE(COpenView, CFormView)
 
-BEGIN_MESSAGE_MAP(COpenView, CFormView)
+BEGIN_MESSAGE_MAP(COpenView, DpiAware::CDpiAwareWnd<CFormView>)
 	//{{AFX_MSG_MAP(COpenView)
 	ON_CONTROL_RANGE(BN_CLICKED, IDC_PATH0_BUTTON, IDC_PATH2_BUTTON, OnPathButton)
 	ON_BN_CLICKED(IDC_SWAP01_BUTTON, (OnSwapButton<IDC_PATH0_COMBO, IDC_PATH1_COMBO>))
@@ -87,6 +87,7 @@ BEGIN_MESSAGE_MAP(COpenView, CFormView)
 	ON_COMMAND(ID_EDIT_UNDO, OnEditAction<WM_UNDO>)
 	ON_COMMAND(ID_EDIT_SELECT_ALL, (OnEditAction<EM_SETSEL, 0, -1>))
 	ON_MESSAGE(WM_USER + 1, OnUpdateStatus)
+	ON_MESSAGE(WM_DPICHANGED_BEFOREPARENT, OnDpiChangedBeforeParent)
 	ON_WM_PAINT()
 	ON_WM_LBUTTONUP()
 	ON_WM_MOUSEMOVE()
@@ -100,7 +101,7 @@ END_MESSAGE_MAP()
 // COpenView construction/destruction
 
 COpenView::COpenView()
-	: CFormView(COpenView::IDD)
+	: DpiAware::CDpiAwareWnd<CFormView>(COpenView::IDD)
 	, m_pUpdateButtonStatusThread(nullptr)
 	, m_bRecurse(false)
 	, m_pDropHandler(nullptr)
@@ -123,7 +124,7 @@ COpenView::~COpenView()
 
 void COpenView::DoDataExchange(CDataExchange* pDX)
 {
-	CFormView::DoDataExchange(pDX);
+	__super::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(COpenView)
 	DDX_Control(pDX, IDC_EXT_COMBO, m_ctlExt);
 	DDX_Control(pDX, IDC_PATH0_COMBO, m_ctlPath[0]);
@@ -147,7 +148,7 @@ BOOL COpenView::PreCreateWindow(CREATESTRUCT& cs)
 	//  the CREATESTRUCT cs
 	cs.style &= ~WS_BORDER;
 	cs.dwExStyle &= ~WS_EX_CLIENTEDGE;
-	return CFormView::PreCreateWindow(cs);
+	return __super::PreCreateWindow(cs);
 }
 
 void COpenView::OnInitialUpdate()
@@ -169,7 +170,7 @@ void COpenView::OnInitialUpdate()
 		m_image.Create(1, 1, 24, 0);
 	}
 
-	CFormView::OnInitialUpdate();
+	__super::OnInitialUpdate();
 
 	// set caption to "swap paths" button
 	LOGFONT lf;
@@ -330,7 +331,7 @@ void COpenView::OnPaint()
 	dc.LineTo(rc.right, rcStatus.top - 3);
 	dc.SelectObject(oldpen);
 
-	CFormView::OnPaint();
+	__super::OnPaint();
 }
 
 void COpenView::OnLButtonUp(UINT nFlags, CPoint point)
@@ -403,7 +404,7 @@ void COpenView::OnWindowPosChanging(WINDOWPOS* lpwndpos)
 	if ((lpwndpos->flags & (SWP_NOMOVE | SWP_NOSIZE)) == 0)
 	{
 		CFrameWnd *const pFrameWnd = GetParentFrame();
-		if (pFrameWnd == GetTopLevelFrame()->GetActiveFrame())
+		if (pFrameWnd == GetTopLevelFrame()->GetActiveFrame() || GetMainFrame()->GetLayoutManager().GetTileLayoutEnabled())
 		{
 			CRect rc;
 			pFrameWnd->GetClientRect(&rc);
@@ -417,7 +418,7 @@ void COpenView::OnWindowPosChanging(WINDOWPOS* lpwndpos)
 				if (lpwndpos->y < 0)
 					lpwndpos->y = 0;
 			}
-			else if (pFrameWnd->IsZoomed())
+			else if (pFrameWnd->IsZoomed() || GetMainFrame()->GetLayoutManager().GetTileLayoutEnabled())
 			{
 				lpwndpos->cx = m_totalLog.cx;
 				lpwndpos->y = (rc.bottom - lpwndpos->cy) / 2;
@@ -444,18 +445,21 @@ void COpenView::OnWindowPosChanged(WINDOWPOS* lpwndpos)
 		if (pFrameWnd == GetTopLevelFrame()->GetActiveFrame())
 		{
 			m_constraint.Persist(true, false);
-			WINDOWPLACEMENT wp;
-			wp.length = sizeof wp;
-			pFrameWnd->GetWindowPlacement(&wp);
-			CRect rc;
-			GetWindowRect(&rc);
-			pFrameWnd->CalcWindowRect(&rc, CWnd::adjustOutside);
-			wp.rcNormalPosition.right = wp.rcNormalPosition.left + rc.Width();
-			wp.rcNormalPosition.bottom = wp.rcNormalPosition.top + rc.Height();
-			pFrameWnd->SetWindowPlacement(&wp);
+			if (!GetMainFrame()->GetLayoutManager().GetTileLayoutEnabled())
+			{
+				WINDOWPLACEMENT wp;
+				wp.length = sizeof wp;
+				pFrameWnd->GetWindowPlacement(&wp);
+				CRect rc;
+				GetWindowRect(&rc);
+				pFrameWnd->CalcWindowRect(&rc, CWnd::adjustOutside);
+				wp.rcNormalPosition.right = wp.rcNormalPosition.left + rc.Width();
+				wp.rcNormalPosition.bottom = wp.rcNormalPosition.top + rc.Height();
+				pFrameWnd->SetWindowPlacement(&wp);
+			}
 		}
 	}
-	CFormView::OnWindowPosChanged(lpwndpos);
+	__super::OnWindowPosChanged(lpwndpos);
 }
 
 void COpenView::OnDestroy()
@@ -463,12 +467,12 @@ void COpenView::OnDestroy()
 	if (m_pDropHandler != nullptr)
 		RevokeDragDrop(m_hWnd);
 
-	CFormView::OnDestroy();
+	__super::OnDestroy();
 }
 
 LRESULT COpenView::OnNcHitTest(CPoint point)
 {
-	if (GetParentFrame()->IsZoomed())
+	if (GetParentFrame()->IsZoomed() || GetMainFrame()->GetLayoutManager().GetTileLayoutEnabled())
 	{
 		CRect rc;
 		GetWindowRect(&rc);
@@ -477,7 +481,7 @@ LRESULT COpenView::OnNcHitTest(CPoint point)
 		if (PtInRect(&rc, point))
 			return HTRIGHT;
 	}
-	return CFormView::OnNcHitTest(point);
+	return __super::OnNcHitTest(point);
 }
 
 /** 
@@ -1048,7 +1052,7 @@ void COpenView::OnTimer(UINT_PTR nIDEvent)
 	if (nIDEvent == IDT_CHECKFILES || nIDEvent == IDT_RETRY)
 		UpdateButtonStates();
 
-	CFormView::OnTimer(nIDEvent);
+	__super::OnTimer(nIDEvent);
 }
 
 /**
@@ -1119,6 +1123,21 @@ LRESULT COpenView::OnUpdateStatus(WPARAM wParam, LPARAM lParam)
 		KillTimer(IDT_RETRY);
 		m_retryCount = 0;
 	}
+	return 0;
+}
+
+LRESULT COpenView::OnDpiChangedBeforeParent(WPARAM wParam, LPARAM lParam)
+{
+	const int olddpi = m_dpi;
+	CRect rc;
+	GetWindowRect(&rc);
+	__super::OnDpiChangedBeforeParent(wParam, lParam);
+	rc.left = MulDiv(rc.left, m_dpi, olddpi);
+	rc.right = MulDiv(rc.right, m_dpi, olddpi);
+	rc.top = MulDiv(rc.top, m_dpi, olddpi);
+	rc.bottom = MulDiv(rc.bottom, m_dpi, olddpi);
+	DefWindowProc(WM_DPICHANGED, (WPARAM)m_dpi, (LPARAM)&rc);
+	SetWindowPos(nullptr, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOMOVE | SWP_NOZORDER);
 	return 0;
 }
 
@@ -1258,7 +1277,7 @@ void COpenView::TrimPaths()
  */
 void COpenView::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
 {
-	CFormView::OnActivate(nState, pWndOther, bMinimized);
+	__super::OnActivate(nState, pWndOther, bMinimized);
 
 	if (nState == WA_ACTIVE || nState == WA_CLICKACTIVE)
 		UpdateButtonStates();

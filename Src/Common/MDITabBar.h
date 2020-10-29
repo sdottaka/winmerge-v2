@@ -6,10 +6,12 @@
  */
 #pragma once
 
+#include "utils/DpiAware.h"
+
 /**
  * @brief Class for Tab bar.
  */
-class CMDITabBar : public CControlBar
+class CMDITabBar : public DpiAware::CDpiAwareWnd<CControlBar>
 {
 	DECLARE_DYNAMIC(CMDITabBar)
 
@@ -24,9 +26,10 @@ private:
 	bool  m_bAutoMaxWidth;
 	int   m_nDraggingTabItemIndex;
 	CFont m_font;
+	int m_cxSMIcon;
 
 public:
-	CMDITabBar() : m_bInSelchange(false), m_pMainFrame(nullptr), m_bMouseTracking(false), m_bCloseButtonDown(false), m_bAutoMaxWidth(true), m_nDraggingTabItemIndex(-1) {}
+	CMDITabBar() : m_bInSelchange(false), m_pMainFrame(nullptr), m_bMouseTracking(false), m_bCloseButtonDown(false), m_bAutoMaxWidth(true), m_nDraggingTabItemIndex(-1), m_cxSMIcon(0) {}
 	virtual ~CMDITabBar() {}
 	BOOL Create(CMDIFrameWnd* pParentWnd);
 	void UpdateTabs();
@@ -67,10 +70,12 @@ protected:
 	afx_msg void OnMouseLeave();
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
+	afx_msg LRESULT OnDpiChangedBeforeParent(WPARAM, LPARAM);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
 private:
+	int determineIconSize() const;
 	CRect GetCloseButtonRect(int nItem) const;
 	int GetItemIndexFromPoint(CPoint pt) const;
 	void SwapTabs(int nIndexA, int nIndexB);

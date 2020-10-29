@@ -88,7 +88,7 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CPreferencesDlg message handlers
 
-BOOL CPreferencesDlg::OnInitDialog() 
+BOOL CPreferencesDlg::OnInitDialog()
 {
 	CTrDialog::OnInitDialog();
 
@@ -154,7 +154,8 @@ void CPreferencesDlg::OnSize(UINT nType, int cx, int cy)
 		CRect rPPHost;
 		pPPHostWnd->GetWindowRect(rPPHost);
 		ScreenToClient(rPPHost);
-		m_pphost.MoveWindow(&rPPHost);
+		if (m_pphost.m_hWnd)
+			m_pphost.MoveWindow(&rPPHost);
 	}
 }
 	

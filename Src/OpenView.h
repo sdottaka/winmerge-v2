@@ -34,7 +34,7 @@ class DropHandler;
  * The dialog shows also a status of the selected paths (found/not found),
  * if enabled in the options (enabled by default).
  */
-class COpenView : public CFormView, public DlgUtils<COpenView>
+class COpenView : public DpiAware::CDpiAwareWnd<CFormView>, public DlgUtils<COpenView>
 {
 protected: // create from serialization only
 	COpenView();
@@ -131,6 +131,7 @@ protected:
 	afx_msg void OnHelp();
 	afx_msg void OnDropFiles(const std::vector<String>& files);
 	afx_msg LRESULT OnUpdateStatus(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnDpiChangedBeforeParent(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnPaint();
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);

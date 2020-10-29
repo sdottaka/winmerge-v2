@@ -139,7 +139,7 @@ void CWindowsManagerDialog::AdjustSize()
 
 	const int nImgWidth = rect.right - rect.left;
 	const int nSpaceWidth = m_List.GetStringWidth(_T(" "));
-	const int nLeftMargin = ::GetSystemMetrics(SM_CXFRAME) * 2 + nSpaceWidth * 4;
+	const int nLeftMargin = GetSystemMetrics(SM_CXFRAME) * 2 + nSpaceWidth * 4;
 
 	int nMaxWidth = -1;
 

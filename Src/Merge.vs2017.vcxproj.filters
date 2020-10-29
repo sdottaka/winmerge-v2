@@ -916,6 +916,12 @@
     <ClCompile Include="WildcardDropList.cpp">
       <Filter>MFCGui\PropertyPages\Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\Externals\crystaledit\editlib\utils\DpiAware.cpp">
+      <Filter>EditLib\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Externals\crystaledit\editlib\utils\MDITileLayout.cpp">
+      <Filter>EditLib\Utils</Filter>
+    </ClCompile>
     <ClCompile Include="..\Externals\crystaledit\editlib\utils\hqbitmap.cpp">
       <Filter>EditLib\Utils</Filter>
     </ClCompile>
@@ -1650,6 +1656,15 @@
     <ClInclude Include="WildcardDropList.h">
       <Filter>MFCGui\PropertyPages\Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Externals\crystaledit\editlib\utils\DpiAware.h">
+      <Filter>EditLib\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Externals\crystaledit\editlib\utils\mfc_templ_defines.h">
+      <Filter>EditLib\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Externals\crystaledit\editlib\utils\MDITileLayout.h">
+      <Filter>EditLib\Utils</Filter>
+    </ClInclude>
     <ClInclude Include="..\Externals\crystaledit\editlib\utils\hqbitmap.h">
       <Filter>EditLib\Utils</Filter>
     </ClInclude>
@@ -1762,5 +1777,8 @@
     <ResourceCompile Include="Merge2.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="WinMergeU.manifest" />
   </ItemGroup>
 </Project>

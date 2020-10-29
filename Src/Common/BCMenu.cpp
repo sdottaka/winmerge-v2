@@ -25,6 +25,7 @@
 
 #include "stdafx.h"        // Standard windows header file
 #include "BCMenu.h"        // BCMenu class declaration
+#include "utils/DpiAware.h"
 #include <afxpriv.h>       //SK: makes A2W and other spiffy AFX macros work
 
 #pragma comment(lib, "uxtheme.lib")
@@ -170,23 +171,7 @@ BCMenu::BCMenu()
 	m_bitmapBackgroundFlag=false;
 	m_loadmenu=false;
 	if (m_hTheme==nullptr && IsThemeActive())
-	{
-		m_hTheme = OpenThemeData(nullptr, _T("MENU"));
-		if (m_hTheme != nullptr)
-		{
-			MARGINS marginCheckBg, marginArrow;	
-			GetThemePartSize(m_hTheme, nullptr, MENU_POPUPCHECK, 0, nullptr, TS_TRUE, &m_sizeCheck);
-			GetThemeMargins(m_hTheme, nullptr, MENU_POPUPCHECK, 0, TMT_CONTENTMARGINS, nullptr, &m_marginCheck);
-			GetThemePartSize(m_hTheme, nullptr, MENU_POPUPSEPARATOR, 0, nullptr, TS_TRUE, &m_sizeSeparator); 
-			GetThemeMargins(m_hTheme, nullptr, MENU_POPUPSEPARATOR, 0, TMT_SIZINGMARGINS, nullptr, &m_marginSeparator);
-			GetThemeMargins(m_hTheme, nullptr, MENU_POPUPCHECKBACKGROUND, 0, TMT_CONTENTMARGINS, nullptr, &marginCheckBg);
-			GetThemeMargins(m_hTheme, nullptr, MENU_POPUPSUBMENU, 0, TMT_CONTENTMARGINS, nullptr, &marginArrow);
-			GetThemeInt(m_hTheme, MENU_POPUPBACKGROUND, 0, TMT_BORDERSIZE, &m_textBorder);
-			m_checkBgWidth = m_marginCheck.cxLeftWidth + m_sizeCheck.cx + m_marginCheck.cxRightWidth;
-			m_gutterWidth = marginCheckBg.cxLeftWidth + m_checkBgWidth + marginCheckBg.cxRightWidth;
-			m_arrowWidth = marginArrow.cxRightWidth;
-		}
-	}
+		ReopenTheme(DpiAware::GetDpiForWindow(AfxGetMainWnd()->m_hWnd));
 }
 
 
@@ -214,6 +199,29 @@ void BCMenuData::SetWideString(const wchar_t *szWideString)
     }
 	else
 		m_szMenuText=nullptr;//set to nullptr so we need not bother about dangling non-nullptr Ptrs
+}
+
+bool BCMenu::ReopenTheme(int dpi)
+{
+	if (!IsThemeActive())
+		return false;
+	if (m_hTheme != nullptr)
+		CloseThemeData(m_hTheme);
+	m_hTheme = DpiAware::OpenThemeDataForDpi(nullptr, _T("MENU"), dpi);
+	if (m_hTheme == nullptr)
+		return false;
+	MARGINS marginCheckBg, marginArrow;	
+	GetThemePartSize(m_hTheme, nullptr, MENU_POPUPCHECK, 0, nullptr, TS_TRUE, &m_sizeCheck);
+	GetThemeMargins(m_hTheme, nullptr, MENU_POPUPCHECK, 0, TMT_CONTENTMARGINS, nullptr, &m_marginCheck);
+	GetThemePartSize(m_hTheme, nullptr, MENU_POPUPSEPARATOR, 0, nullptr, TS_TRUE, &m_sizeSeparator); 
+	GetThemeMargins(m_hTheme, nullptr, MENU_POPUPSEPARATOR, 0, TMT_SIZINGMARGINS, nullptr, &m_marginSeparator);
+	GetThemeMargins(m_hTheme, nullptr, MENU_POPUPCHECKBACKGROUND, 0, TMT_CONTENTMARGINS, nullptr, &marginCheckBg);
+	GetThemeMargins(m_hTheme, nullptr, MENU_POPUPSUBMENU, 0, TMT_CONTENTMARGINS, nullptr, &marginArrow);
+	GetThemeInt(m_hTheme, MENU_POPUPBACKGROUND, 0, TMT_BORDERSIZE, &m_textBorder);
+	m_checkBgWidth = m_marginCheck.cxLeftWidth + m_sizeCheck.cx + m_marginCheck.cxRightWidth;
+	m_gutterWidth = marginCheckBg.cxLeftWidth + m_checkBgWidth + marginCheckBg.cxRightWidth;
+	m_arrowWidth = marginArrow.cxRightWidth;
+	return true;
 }
 
 bool BCMenu::IsMenu(HMENU submenu)
@@ -544,8 +552,9 @@ void BCMenu::DrawItem_Theme(LPDRAWITEMSTRUCT lpDIS)
 	INT_PTR xoffset = mdata->global_offset;
 	CString	strText = mdata->GetString();
 
-	int cxSMIcon = GetSystemMetrics(SM_CXSMICON);
-	int cySMIcon = GetSystemMetrics(SM_CYSMICON);
+	const int dpi = DpiAware::GetDpiForWindow(AfxGetMainWnd()->m_hWnd);
+	const int cxSMIcon = DpiAware::GetSystemMetricsForDpi(SM_CXSMICON, dpi);
+	const int cySMIcon = DpiAware::GetSystemMetricsForDpi(SM_CYSMICON, dpi);
 
 	if(xoffset >= 0){
 		CImage bitmapstandard;
@@ -719,10 +728,10 @@ void BCMenu::MeasureItem( LPMEASUREITEMSTRUCT lpMIS )
 	}
 	else{
 		CFont fontMenu;
-		NONCLIENTMETRICS nm = { sizeof NONCLIENTMETRICS };
-		VERIFY(::SystemParametersInfo(SPI_GETNONCLIENTMETRICS,
-			nm.cbSize,&nm,0)); 
-		fontMenu.CreateFontIndirect (&nm.lfMenuFont);
+		LOGFONT lfMenuFont;
+		const int dpi = DpiAware::GetDpiForWindow(AfxGetMainWnd()->m_hWnd);
+		DpiAware::GetNonClientLogFont(lfMenuFont, offsetof(NONCLIENTMETRICS, lfMenuFont), dpi);
+		fontMenu.CreateFontIndirect (&lfMenuFont);
 		
 		// Obtain the width of the text:
 		CClientDC dc(AfxGetMainWnd() ? AfxGetMainWnd() : CWnd::GetDesktopWindow());     // Get device context
@@ -745,11 +754,12 @@ void BCMenu::MeasureItem( LPMEASUREITEMSTRUCT lpMIS )
 		
 		const int BCMENU_PAD=4;
 		if (m_hTheme == nullptr)
-			lpMIS->itemWidth = m_iconX+BCMENU_PAD+8+t.cx;
+			lpMIS->itemWidth = MulDiv(m_iconX+BCMENU_PAD+8, dpi, USER_DEFAULT_SCREEN_DPI) +t.cx;
 		else
 			lpMIS->itemWidth = m_gutterWidth+m_textBorder+t.cx+m_arrowWidth;
-		int temp = GetSystemMetrics(SM_CYMENU);
-		lpMIS->itemHeight = temp>m_iconY+BCMENU_PAD ? temp : m_iconY+BCMENU_PAD;
+		int temp = DpiAware::GetSystemMetricsForDpi(SM_CYMENU, dpi);
+		int temp2 = MulDiv(m_iconY + BCMENU_PAD, dpi, USER_DEFAULT_SCREEN_DPI);
+		lpMIS->itemHeight = temp>temp2 ? temp : temp2;
 	}
 }
 

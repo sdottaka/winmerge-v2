@@ -186,10 +186,17 @@
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention />
       <TargetMachine>MachineX86</TargetMachine>
+      <MinimumRequiredVersion>5.01</MinimumRequiredVersion>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Bscmake>
+    <Manifest>
+      <AdditionalManifestFiles>SampleStatic.manifest</AdditionalManifestFiles>
+    </Manifest>
+    <Manifest>
+      <EnableDpiAwareness />
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Midl>
@@ -230,6 +237,12 @@
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Bscmake>
+    <Manifest>
+      <AdditionalManifestFiles>SampleStatic.manifest</AdditionalManifestFiles>
+    </Manifest>
+    <Manifest>
+      <EnableDpiAwareness />
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Midl>
@@ -267,10 +280,17 @@
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention />
       <TargetMachine>MachineX86</TargetMachine>
+      <MinimumRequiredVersion>5.01</MinimumRequiredVersion>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Bscmake>
+    <Manifest>
+      <AdditionalManifestFiles>SampleStatic.manifest</AdditionalManifestFiles>
+    </Manifest>
+    <Manifest>
+      <EnableDpiAwareness />
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Midl>
@@ -312,6 +332,12 @@
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Bscmake>
+    <Manifest>
+      <AdditionalManifestFiles>SampleStatic.manifest</AdditionalManifestFiles>
+    </Manifest>
+    <Manifest>
+      <EnableDpiAwareness />
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|Win32'">
     <Midl>
@@ -349,10 +375,17 @@
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention />
       <TargetMachine>MachineX86</TargetMachine>
+      <MinimumRequiredVersion>5.01</MinimumRequiredVersion>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Bscmake>
+    <Manifest>
+      <AdditionalManifestFiles>SampleStatic.manifest</AdditionalManifestFiles>
+    </Manifest>
+    <Manifest>
+      <EnableDpiAwareness />
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|x64'">
     <Midl>
@@ -394,6 +427,12 @@
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Bscmake>
+    <Manifest>
+      <AdditionalManifestFiles>SampleStatic.manifest</AdditionalManifestFiles>
+    </Manifest>
+    <Manifest>
+      <EnableDpiAwareness />
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Release|Win32'">
     <Midl>
@@ -432,10 +471,17 @@
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention />
       <TargetMachine>MachineX86</TargetMachine>
+      <MinimumRequiredVersion>5.01</MinimumRequiredVersion>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Bscmake>
+    <Manifest>
+      <AdditionalManifestFiles>SampleStatic.manifest</AdditionalManifestFiles>
+    </Manifest>
+    <Manifest>
+      <EnableDpiAwareness />
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Release|x64'">
     <Midl>
@@ -478,6 +524,12 @@
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Bscmake>
+    <Manifest>
+      <AdditionalManifestFiles>SampleStatic.manifest</AdditionalManifestFiles>
+    </Manifest>
+    <Manifest>
+      <EnableDpiAwareness />
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\editlib\parsers\asp.cpp" />
@@ -507,6 +559,7 @@
     <ClCompile Include="..\editlib\parsers\css.cpp" />
     <ClCompile Include="..\editlib\parsers\dcl.cpp" />
     <ClCompile Include="..\editlib\edtlib.cpp" />
+    <ClCompile Include="..\editlib\utils\DpiAware.cpp" />
     <ClCompile Include="..\editlib\utils\filesup.cpp" />
     <ClCompile Include="..\editlib\parsers\fortran.cpp" />
     <ClCompile Include="..\editlib\utils\fpattern.cpp" />
@@ -532,6 +585,7 @@
     <ClCompile Include="..\editlib\parsers\po.cpp" />
     <ClCompile Include="..\editlib\parsers\powershell.cpp" />
     <ClCompile Include="..\editlib\parsers\python.cpp" />
+    <ClCompile Include="..\editlib\utils\MDITileLayout.cpp" />
     <ClCompile Include="..\editlib\utils\registry.cpp" />
     <ClCompile Include="..\editlib\parsers\rexx.cpp" />
     <ClCompile Include="..\editlib\parsers\rsrc.cpp" />
@@ -586,6 +640,7 @@
     <ClInclude Include="..\editlib\editcmd.h" />
     <ClInclude Include="..\editlib\editreg.h" />
     <ClInclude Include="..\editlib\edtlib.h" />
+    <ClInclude Include="..\editlib\utils\DpiAware.h" />
     <ClInclude Include="..\editlib\utils\filesup.h" />
     <ClInclude Include="..\editlib\utils\fpattern.h" />
     <ClInclude Include="..\editlib\dialogs\gotodlg.h" />
@@ -594,6 +649,7 @@
     <ClInclude Include="..\editlib\LineInfo.h" />
     <ClInclude Include="..\editlib\parsers\crystallineparser.h" />
     <ClInclude Include="..\editlib\dialogs\memcombo.h" />
+    <ClInclude Include="..\editlib\utils\MDITileLayout.h" />
     <ClInclude Include="..\editlib\utils\registry.h" />
     <ClInclude Include="..\editlib\utils\string_util.h" />
     <ClInclude Include="..\editlib\SyntaxColors.h" />

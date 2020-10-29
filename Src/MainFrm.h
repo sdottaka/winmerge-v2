@@ -17,6 +17,8 @@
 #include "PathContext.h"
 #include "OptionsDef.h"
 #include "OptionsMgr.h"
+#include "utils/DpiAware.h"
+#include "utils/MDITileLayout.h"
 
 class BCMenu;
 class CDirView;
@@ -49,7 +51,7 @@ CMainFrame * GetMainFrame(); // access to the singleton main frame object
 /**
  * @brief Frame class containing save-routines etc
  */
-class CMainFrame : public CMDIFrameWnd
+class CMainFrame : public DpiAware::CDpiAwareWnd<CMDIFrameWnd>
 {
 	friend CLanguageSelect;
 	DECLARE_DYNAMIC(CMainFrame)
@@ -111,6 +113,7 @@ public:
 	void ReloadMenu();
 	DropHandler *GetDropHandler() const { return m_pDropHandler; }
 	const CTypedPtrArray<CPtrArray, CMDIChildWnd*>* GetChildArray() const { return &m_arrChild; }
+	MDITileLayout::LayoutManager& GetLayoutManager() { return m_layoutManager; };
 
 // Overrides
 	virtual void GetMessageString(UINT nID, CString& rMessage) const;
@@ -121,6 +124,7 @@ public:
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	virtual void OnUpdateFrameTitle(BOOL bAddToTitle);
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
+
 	//}}AFX_VIRTUAL
 
 // Implementation methods
@@ -139,9 +143,10 @@ protected:
 	CToolBar m_wndToolBar;
 	CMDITabBar m_wndTabBar;
 	CTypedPtrArray<CPtrArray, CMDIChildWnd*> m_arrChild;
+	MDITileLayout::LayoutManager m_layoutManager;
 
 	// Tweak MDI client window behavior
-	class CMDIClient : public CWnd
+	class CMDIClient : public DpiAware::CDpiAwareWnd<CWnd>
 	{
 		static UINT_PTR const m_nRedrawTimer = 1612;
 		virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
@@ -168,6 +173,13 @@ protected:
 					SetRedraw(TRUE);
 					RedrawWindow(NULL, NULL, RDW_ALLCHILDREN | RDW_INVALIDATE);
 				}
+				break;
+			case WM_SIZE:
+				if (AfxGetMainWnd())
+					GetMainFrame()->GetLayoutManager().NotifyMainResized();
+				break;
+			case WM_DPICHANGED_BEFOREPARENT:
+				UpdateDpi();
 				break;
 			}
 			return CWnd::WindowProc(message, wParam, lParam);
@@ -221,6 +233,7 @@ protected:
 	std::unique_ptr<BCMenu> m_pImageMenu;
 	std::vector<TempFilePtr> m_tempFiles; /**< List of possibly needed temp files. */
 	DropHandler *m_pDropHandler;
+
 
 // Generated message map functions
 protected:
@@ -290,6 +303,8 @@ protected:
     afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg void OnDestroy();
 	afx_msg void OnAccelQuit();
+	afx_msg LRESULT OnDpiChanged(WPARAM wParam, LPARAM lParam);
+	afx_msg BOOL OnMDIWindowCmd(UINT nID);
 	//}}AFX_MSG
 	afx_msg LRESULT OnChildFrameAdded(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnChildFrameRemoved(WPARAM wParam, LPARAM lParam);
