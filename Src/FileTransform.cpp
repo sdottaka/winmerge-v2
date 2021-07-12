@@ -613,6 +613,85 @@ bool PrediffingInfo::Prediffing(String & filepath, const String& filteredText, b
 	return true;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// transformation text
+
+bool EditorScriptInfo::GetEditorScriptPlugin(std::vector<std::tuple<PluginInfo*, std::vector<String>, int>>& plugins,
+	String& errorMessage) const
+{
+	auto result = ParsePluginPipeline(errorMessage);
+	if (!errorMessage.empty())
+		return false;
+	for (auto& [pluginName, args, quoteChar] : result)
+	{
+		bool found = false;
+		PluginArray *pluginInfoArray = CAllThreadsScripts::GetActiveSet()->GetAvailableScripts(L"EDTIOR_SCRIPT");
+		for (const auto& plugin : *pluginInfoArray)
+		{
+			std::vector<String> namesArray;
+			std::vector<int> idArray;
+			int nFunc = plugin::GetMethodsFromScript(plugin->m_lpDispatch, namesArray, idArray);
+			for (int i = 0; i < nFunc; ++i)
+			{
+				if (namesArray[i] == pluginName)
+				{
+					plugins.push_back({ plugin.get(), args, idArray[i] });
+					found = true;
+					break;
+				}
+			}
+			if (found)
+				break;
+		}
+		if (!found)
+		{
+			errorMessage = strutils::format_string1(_("Plugin not found or invalid: %1"), pluginName);
+			return false;
+		}
+	}
+	return true;
+}
+
+bool EditorScriptInfo::Transform(String & text, const std::vector<StringView>& variables)
+{
+	// no handler : return true
+	if (m_PluginPipeline.empty())
+		return true;
+
+	// control value
+	bool bHandled = false;
+	String errorMessage;
+	std::vector<std::tuple<PluginInfo*, std::vector<String>, int>> plugins;
+	if (!GetEditorScriptPlugin(plugins, errorMessage))
+	{
+		AppErrorMessageBox(errorMessage);
+		return false;
+	}
+
+	for (const auto& [plugin, args, fncID] : plugins)
+	{
+		LPDISPATCH piScript = plugin->m_lpDispatch;
+		Poco::FastMutex::ScopedLock lock(g_mutex);
+
+		if (plugin->m_hasVariablesProperty)
+		{
+			if (!plugin::InvokePutPluginVariables(String(variables[0].data(), variables[0].length()), piScript))
+				return false;
+		}
+		if (plugin->m_hasArgumentsProperty)
+		{
+			if (!plugin::InvokePutPluginArguments(args.empty() ? plugin->m_arguments : MakeArguments(args, variables), piScript))
+				return false;
+		}
+
+		// execute the transform operation
+		int nChanged = 0;
+		if (!plugin::InvokeTransformText(text, nChanged, plugin->m_lpDispatch, fncID))
+			return false;
+	}
+	return true;
+}
+
 namespace FileTransform
 {
 
@@ -667,37 +746,6 @@ bool AnyCodepageToUTF8(int codepage, String & filepath, bool bMayOverwrite)
 
 ////////////////////////////////////////////////////////////////////////////////
 // transformation : TextTransform_Interactive (editor scripts)
-
-std::vector<String> GetFreeFunctionsInScripts(const wchar_t *TransformationEvent)
-{
-	std::vector<String> sNamesArray;
-
-	// get an array with the available scripts
-	PluginArray * piScriptArray = 
-		CAllThreadsScripts::GetActiveSet()->GetAvailableScripts(TransformationEvent);
-
-	// fill in these structures
-	int nFnc = 0;	
-	size_t iScript;
-	for (iScript = 0 ; iScript < piScriptArray->size() ; iScript++)
-	{
-		const PluginInfoPtr & plugin = piScriptArray->at(iScript);
-		if (plugin->m_disabled)
-			continue;
-		LPDISPATCH piScript = plugin->m_lpDispatch;
-		std::vector<String> scriptNamesArray;
-		std::vector<int> scriptIdsArray;
-		int nScriptFnc = plugin::GetMethodsFromScript(piScript, scriptNamesArray, scriptIdsArray);
-		sNamesArray.resize(nFnc+nScriptFnc);
-
-		int iFnc;
-		for (iFnc = 0 ; iFnc < nScriptFnc ; iFnc++)
-			sNamesArray[nFnc+iFnc] = scriptNamesArray[iFnc];
-
-		nFnc += nScriptFnc;
-	}
-	return sNamesArray;
-}
 
 bool Interactive(String & text, const std::vector<String>& args, const wchar_t *TransformationEvent, int iFncChosen, const std::vector<StringView>& variables)
 {

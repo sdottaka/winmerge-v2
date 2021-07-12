@@ -144,13 +144,6 @@ Function regRead(Key, DefaultValue)
 	regRead = wsh.RegRead(Key)
 End Function
 
-Function IsLangJapanese()
-	Dim languageId
-	On Error Resume Next
-	languageId = CLng(regRead(WinMergeRegKeyPath & "Locale\LanguageId", 1033))
-	IsLangJapanese = (languageId = 1041)
-End Function
-
 Function ReplaceVariables(str)
 	Dim newstr
 	Dim pos
@@ -380,11 +373,7 @@ Function ExecFilterCommand(Text)
 	Dim cmd
 	If IsFirstArgumentEmpty() Then
 		cmd = regRead(PluginRegKeyPath & "ExecFilterCommand", "")
-		If IsLangJapanese() Then
-			cmd = InputBox("フィルタコマンドを入力してください", "ExecFilterCommand", cmd)
-		Else
-			cmd = InputBox("Enter filter command", "ExecFilterCommand", cmd)
-		End If
+		cmd = InputBox("Enter filter command", "ExecFilterCommand", cmd)
 		If cmd <> "" Then
 			wsh.RegWrite PluginRegKeyPath & "ExecFilterCommand", cmd
 		End If
@@ -393,11 +382,7 @@ Function ExecFilterCommand(Text)
 		cmd = arguments
 	End If
 	If cmd = "" Then
-		If IsLangJapanese() Then
-			Err.Raise 30001, , "キャンセルされました"
-		Else
-			Err.Raise 30001, , "Canceled"
-		End If
+		Err.Raise 30001, , "Canceled"
 		Exit Function
 	End If
 
@@ -419,11 +404,7 @@ Function ExecFilterCommand(Text)
 	Dim exe
 	Set exe = wsh.Exec("cmd /c type """ & path & """ | " & cmd & " 2>&1")
 	If exe Is Nothing Then
-		If IsLangJapanese() Then
-			MsgBox "コマンド " & cmd & " の実行に失敗しました:" & Err.Description 
-		Else
-			MsgBox "Failed to execute the command '" & cmd & "':" & Err.Description 
-		End If
+		MsgBox "Failed to execute the command '" & cmd & "':" & Err.Description 
 		fso.DeleteFile path
 		Exit Function
 	End If
@@ -446,11 +427,7 @@ Function SelectColumns(Text)
 	Dim invert
 	If IsFirstArgumentEmpty() Then
 		args = regRead(PluginRegKeyPath & "SelectColumns", "")
-		If IsLangJapanese() Then
-			args = InputBox("抽出する列番号の範囲を指定してください (例: -3,5-10,30-)" & vbCrLf & "または抽出したい文字列にマッチする正規表現を指定してください:", "SelectColumns", ranges)
-		Else
-			args = InputBox("Enter the list of column ranges to select (e.g. -3,5-10,30-)" & vbCrLf & "or regular expression:", "SelectColumns", args)
-		End If
+		args = InputBox("Enter the list of column ranges to select (e.g. -3,5-10,30-)" & vbCrLf & "or regular expression:", "SelectColumns", args)
 		If args <> "" Then
 			wsh.RegWrite PluginRegKeyPath & "SelectColumns", args
 		End If
@@ -458,11 +435,7 @@ Function SelectColumns(Text)
 		args = arguments
 	End If
 	If args = "" Then
-		If IsLangJapanese() Then
-			Err.Raise 30001, , "キャンセルされました"
-		Else
-			Err.Raise 30001, , "Canceled"
-		End If
+		Err.Raise 30001, , "Canceled"
 		Exit Function
 	End If
 	lines = SplitLines(Text, eol)
@@ -502,11 +475,7 @@ Function SelectLines(Text)
 	Dim invert
 	If IsFirstArgumentEmpty() Then
 		args = regRead(PluginRegKeyPath & "SelectLines", "")
-		If IsLangJapanese() Then
-			args = InputBox("抽出する行番号の範囲を指定してください (例: -3,5-10,30-)" & vbCrLf & "または、抽出したい行にマッチする正規表現を指定してください:", "SelectLines", ranges)
-		Else
-			args = InputBox("Enter the list of line ranges to select (e.g. -3,5-10,30-)" & vbCrLf & "or regular expression:", "SelectLines", args)
-		End If
+		args = InputBox("Enter the list of line ranges to select (e.g. -3,5-10,30-)" & vbCrLf & "or regular expression:", "SelectLines", args)
 		If args <> "" Then
 			wsh.RegWrite PluginRegKeyPath & "SelectLines", args
 		End If
@@ -514,11 +483,7 @@ Function SelectLines(Text)
 		args = arguments
 	End If
 	If args = "" Then
-		If IsLangJapanese() Then
-			Err.Raise 30001, , "キャンセルされました"
-		Else
-			Err.Raise 30001, , "Canceled"
-		End If
+		Err.Raise 30001, , "Canceled"
 		Exit Function
 	End If
 	lines = SplitLines(Text, eol)
@@ -571,11 +536,7 @@ Function ReplaceText(Text)
 	ReplaceText = Text
 	If IsFirstArgumentEmpty() Then
 		args = regRead(PluginRegKeyPath & "Replace", "")
-		If IsLangJapanese() Then
-			args = InputBox("検索する文字列と置換する文字列を指定してください:", "Replace", args)
-		Else
-			args = InputBox("Enter the search text and replacement text:", "Replace", args)
-		End If
+		args = InputBox("Enter the search text and replacement text:", "Replace", args)
 		If args <> "" Then
 			wsh.RegWrite PluginRegKeyPath & "Replace", args
 		End If
@@ -583,11 +544,7 @@ Function ReplaceText(Text)
 		args = arguments
 	End If
 	If args = "" Then
-		If IsLangJapanese() Then
-			Err.Raise 30001, , "キャンセルされました"
-		Else
-			Err.Raise 30001, , "Canceled"
-		End If
+		Err.Raise 30001, , "Canceled"
 		Exit Function
 	End If
 	patterns = ParseReplaceArguments(args, regex, ignoreCase)
@@ -620,11 +577,7 @@ Function Tokenize(Text)
 	Dim pattern
 	If IsFirstArgumentEmpty() Then
 		pattern = regRead(PluginRegKeyPath & "Tokenize", "")
-		If IsLangJapanese() Then
-			pattern = InputBox("トークン分割する区切りを正規表現で入力してください (例: [^\w]+):", "Tokenize", pattern)
-		Else
-			pattern = InputBox("Enter regex to tokenize (e.g. [^\w]+):", "Tokenize", pattern)
-		End If
+		pattern = InputBox("Enter regex to tokenize (e.g. [^\w]+):", "Tokenize", pattern)
 		If pattern <> "" Then
 			wsh.RegWrite PluginRegKeyPath & "Tokenize", pattern
 		End If
@@ -632,11 +585,7 @@ Function Tokenize(Text)
 		pattern = arguments
 	End If
 	If pattern = "" Then
-		If IsLangJapanese() Then
-			Err.Raise 30001, , "キャンセルされました"
-		Else
-			Err.Raise 30001, , "Canceled"
-		End If
+		Err.Raise 30001, , "Canceled"
 		Exit Function
 	End If
 	Dim re

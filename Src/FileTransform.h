@@ -162,6 +162,25 @@ public:
 	bool Prediffing(String & filepath, const String& filteredText, bool bMayOverwrite, const std::vector<StringView>& variables);
 };
 
+/**
+ * @brief Editor script information
+ *
+ * @note Can be be passed/copied between threads
+ */
+class EditorScriptInfo : public PluginForFile
+{
+public:
+	explicit EditorScriptInfo(const String& pluginPipeline)
+	: PluginForFile(pluginPipeline)
+	{
+	}
+
+	bool GetEditorScriptPlugin(std::vector<std::tuple<PluginInfo*, std::vector<String>, int>>& plugins,
+		String& errorMessage) const;
+
+	bool Transform(String & text, const std::vector<StringView>& variables);
+};
+
 namespace FileTransform
 {
 /**
@@ -176,27 +195,6 @@ namespace FileTransform
  * if other file is unicode or uses a different codepage
  */
 bool AnyCodepageToUTF8(int codepage, String & filepath, bool bMayOverwrite);
-
-
-/**
- * @brief Get the list of all the free functions in all the scripts for this event :
- * 
- * @note the order is :
- * 1st script file, 1st function name
- * 1st script file, 2nd function name
- * 1st script file, ...
- * 1st script file, last function name
- * 2nd script file, 1st function name
- * 2nd script file, 2nd function name
- * 2nd script file, ...
- * 2nd script file, last function name
- * ... script file
- * last script file, 1st function name
- * last script file, 2nd function name
- * last script file, ...
- * last script file, last function name
- */
-std::vector<String> GetFreeFunctionsInScripts(const wchar_t* TransformationEvent);
 
 /** 
  * @brief : Execute one free function from one script
