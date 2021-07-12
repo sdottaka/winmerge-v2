@@ -13,8 +13,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: WinMerge\n"
 "Report-Msgid-Bugs-To: https://bugs.winmerge.org/\n"
-"POT-Creation-Date: 2021-06-24 20:41+0000\n"
-"PO-Revision-Date: 2021-06-25 13:23+0100\n"
+"POT-Creation-Date: 2021-07-11 11:37+0000\n"
+"PO-Revision-Date: 2021-07-12 18:48+0100\n"
 "Last-Translator: Hugo Carvalho <hugokarvalho@hotmail.com>\n"
 "Language-Team: Portuguese <winmerge-translate@lists.sourceforge.net>\n"
 "Language: pt\n"
@@ -138,16 +138,16 @@ msgid "&Active Pane"
 msgstr "Janela Ativa"
 
 msgid "Rotate &Right 90deg"
-msgstr ""
+msgstr "Rodar 90° para a direita"
 
 msgid "Rotate &Left 90deg"
-msgstr ""
+msgstr "Rodar 90° para a esquerda"
 
 msgid "Flip &Vertically"
-msgstr ""
+msgstr "Rodar &Verticalmente"
 
 msgid "Flip &Horizontally"
-msgstr ""
+msgstr "Rodar &Horizontalmente"
 
 msgid "&Zoom"
 msgstr "&Zoom"
@@ -170,19 +170,19 @@ msgid "&Overlay"
 msgstr "Sobreposição"
 
 msgid "&Alpha Blend"
-msgstr "Alpha combinado"
+msgstr "&Alpha Blend"
 
 msgid "Alpha &Blend Animation"
-msgstr "Animação Alpha"
+msgstr "Animação Alpha &Blend"
 
 msgid "Dragging &Mode"
-msgstr "Modo de arrastar"
+msgstr "&Modo de arrastar"
 
 msgid "&Move"
-msgstr "Mover"
+msgstr "&Mover"
 
 msgid "&Adjust Offset"
-msgstr "Ajustar deslocamento"
+msgstr "&Ajustar Deslocamento"
 
 msgid "&Vertical Wipe"
 msgstr "Limpeza &Vertical"
@@ -725,7 +725,7 @@ msgid "Comp&are"
 msgstr "Comparar"
 
 msgid "Compare in new &window"
-msgstr ""
+msgstr "Comparar em nova janela"
 
 msgid "Compare Non-hor&izontally..."
 msgstr "Comparar não-hor&izontalmente..."
@@ -2072,8 +2072,12 @@ msgstr "Avançar todos"
 msgid "Don't display this &message again."
 msgstr "Não voltar a exibir esta mensagem."
 
-msgid "To make this message box visible again, press the Reset button on the Message Boxes page of the Options dialog."
+msgid ""
+"To make this message box visible again, press the Reset button on the "
+"Message Boxes page of the Options dialog."
 msgstr ""
+"Para tornar esta caixa de mensagens visível novamente, prima o botão Repor "
+"na página Caixas de mensagem da janela de opções."
 
 msgid "Syntax"
 msgstr "Syntax"
@@ -2088,7 +2092,7 @@ msgid "Differences"
 msgstr "Diferenças"
 
 msgid "Message Boxes"
-msgstr ""
+msgstr "Caixas de mensagens"
 
 msgid "To:"
 msgstr "Para:"
@@ -2172,10 +2176,10 @@ msgid "Extension"
 msgstr "Extensão"
 
 msgid "Message"
-msgstr ""
+msgstr "Mensagem"
 
 msgid "Answer"
-msgstr ""
+msgstr "Resposta"
 
 msgid "Name"
 msgstr "Nome"
@@ -3716,11 +3720,11 @@ msgstr "Rc: (%d, %d)  "
 
 #, c-format
 msgid "Flipped: %s  "
-msgstr ""
+msgstr "Virada: %s  "
 
 #, c-format
 msgid "Rotated: %s  "
-msgstr ""
+msgstr "Rodado: %s  "
 
 msgid "<Edit here>"
 msgstr "<Edit here>"
@@ -3791,13 +3795,13 @@ msgid "Sort Lines Descending"
 msgstr "Ordem de linhas descendente"
 
 msgid "Reverse Columns"
-msgstr ""
+msgstr "Colunas Inversas"
 
 msgid "Reverse Lines"
-msgstr ""
+msgstr "Linhas inversas"
 
 msgid "Replace..."
-msgstr ""
+msgstr "Substituir..."
 
 msgid "Apply Filter Command..."
 msgstr "Aplicar comando de filtro..."
@@ -3845,7 +3849,7 @@ msgid "Prettify XML"
 msgstr "Embelezar XML"
 
 msgid "Prettify YAML"
-msgstr ""
+msgstr "Embelezar YAML"
 
 msgid "Visualize Graphviz"
 msgstr "Visualizar Graphviz"
@@ -3860,7 +3864,7 @@ msgid "Query JSON Data..."
 msgstr "Consultar dados JSON..."
 
 msgid "Query YAML Data..."
-msgstr ""
+msgstr "Consultar dados YAML..."
 
 #, c-format
 msgid "Missing plugin name in plugin pipeline: %1"
